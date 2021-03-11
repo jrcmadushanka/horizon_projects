@@ -27,6 +27,15 @@ dependencies:
   # Add the dependency for the FlutterFire plugin for Google Analytics
   firebase_analytics: ^5.0.2
 
+  #date time picker
+  date_field: ^1.0.4
+
+  #item slector
+  item_selector: ^0.1.1
+
+  #selector form
+  select_form_field: "^2.0.0"
+
   # Add the dependencies for any other Firebase products you want to use in your app
   # For example, to use Firebase Authentication and Cloud Firestore
   firebase_database: ^6.1.0
