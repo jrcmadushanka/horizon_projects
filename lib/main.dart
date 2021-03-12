@@ -8,7 +8,6 @@ import 'package:horizon_projects/adminDashboard.dart';
 import 'package:horizon_projects/widget/defaultButton.dart';
 
 Future<void> main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MyApp());
@@ -20,7 +19,6 @@ class MyApp extends StatelessWidget {
     return new MaterialApp(
       theme: new ThemeData(primarySwatch: Colors.blue),
       home: new LoginPage(),
-
     );
   }
 }
@@ -35,6 +33,7 @@ class LoginPageState extends State<LoginPage>
   var _adminName = "";
   var _adminEmail = "";
   TextEditingController _emailController = TextEditingController(text: "");
+  final FirebaseAuth auth = FirebaseAuth.instance;
 
   UserCredential userCredential;
 
@@ -43,22 +42,43 @@ class LoginPageState extends State<LoginPage>
   final TextEditingController adminIdController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-
   @override
   void initState() {
     super.initState();
 
-    FirebaseAuth.instance.authStateChanges().listen((User user) {
+    auth.authStateChanges().listen((User user) {
       if (user == null) {
         print('User is currently signed out!');
       } else {
-        print('User is signed in!' + user.uid.toString());
-        Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => AdminDashboard()),
-      );
-    }
+        _getUser();
+      }
     });
+  }
+
+  Future<void> _getUser() async {
+    try {
+      FirebaseFirestore.instance
+          .collection('users')
+          .where('uid', isEqualTo: auth.currentUser.uid)
+          .get()
+          .then((QuerySnapshot querySnapshot) => {
+                querySnapshot.docs.forEach((doc) {
+                  setState(() {
+                    if (doc["type"].toString() == "ADMIN") {
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => AdminDashboard()));
+                    }
+                  });
+                })
+              })
+          .onError((error, stackTrace) => {print(stackTrace)});
+    } on FirebaseAuthException catch (e) {
+      print(e.code);
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> _firebaseLogin() async {
@@ -94,6 +114,7 @@ class LoginPageState extends State<LoginPage>
                     _adminEmail = doc["email"];
                     _emailController.text = "**************************";
                   });
+                  Navigator.pop(context);
                   return doc["full_name"];
                 })
               })
