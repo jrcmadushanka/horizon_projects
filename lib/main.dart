@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:core';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -34,6 +35,7 @@ class LoginPageState extends State<LoginPage>
   var _adminEmail = "";
   TextEditingController _emailController = TextEditingController(text: "");
   final FirebaseAuth auth = FirebaseAuth.instance;
+  StreamSubscription<User> authListener;
 
   UserCredential userCredential;
 
@@ -46,13 +48,19 @@ class LoginPageState extends State<LoginPage>
   void initState() {
     super.initState();
 
-    auth.authStateChanges().listen((User user) {
+    authListener = auth.authStateChanges().listen((User user) {
       if (user == null) {
         print('User is currently signed out!');
       } else {
         _getUser();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    authListener.cancel() ;
   }
 
   Future<void> _getUser() async {

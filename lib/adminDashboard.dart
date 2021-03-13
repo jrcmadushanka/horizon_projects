@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+//import 'package:firebase_database/ui/firebase_animated_list.dart' ;
 import 'package:flutter/material.dart';
 import 'package:horizon_projects/main.dart';
-import 'package:horizon_projects/widget/UserCard.dart';
-import 'package:horizon_projects/widget/UserListView.dart';
+import 'package:horizon_projects/model/models.dart';
+import 'package:horizon_projects/widget/AddUserDialog.dart';
+import 'package:horizon_projects/widget/UserCardItem.dart';
 
 class AdminDashboard extends StatefulWidget {
   @override
@@ -14,14 +17,18 @@ class AdminDashboard extends StatefulWidget {
 class AdminDashboardState extends State<AdminDashboard>
     with SingleTickerProviderStateMixin {
   final FirebaseAuth auth = FirebaseAuth.instance;
-  QueryDocumentSnapshot _user;
+  final TextEditingController adminIdController = new TextEditingController();
+  final TextEditingController passwordController = new TextEditingController();
+  final TextEditingController emailController = new TextEditingController();
+  final TextEditingController nameController = new TextEditingController();
+  final TextEditingController typeController = new TextEditingController();
 
-  // List
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-  ListModel<int> _list = ListModel<int>();
-  int _selectedItem;
-  int _nextItem = 0; // The next item inserted when the user presses the '+' button.
-  ////
+  Query get query => FirebaseFirestore.instance.collection('users').limit(20);
+
+  final List<UserModel> _users = [];
+  final key = GlobalKey<AnimatedListState>();
+  QueryDocumentSnapshot _user;
+  String userType;
 
   Future<void> _getUser() async {
     try {
@@ -37,6 +44,40 @@ class AdminDashboardState extends State<AdminDashboard>
                 })
               })
           .onError((error, stackTrace) => {print(stackTrace)});
+    } on FirebaseAuthException catch (e) {
+      print(e.code);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> _getAllUsers() async {
+    try {
+      FirebaseFirestore.instance
+          .collection('users')
+          .snapshots()
+          .listen((event) {
+        for (var i = 0; i <= _users.length - 1; i++) {
+          key.currentState.removeItem(0,
+              (BuildContext context, Animation<double> animation) {
+            return Container();
+          });
+        }
+        _users.clear();
+        event.docs.forEach((element) {
+          UserModel user = UserModel(
+              element.data().containsKey("uid") ? element["uid"] : "",
+              element.data().containsKey("full_name")
+                  ? element["full_name"]
+                  : "",
+              element.data().containsKey("admin_id") ? element["admin_id"] : "",
+              element.data().containsKey("email") ? element["email"] : "",
+              element.data().containsKey("type") ? element["type"] : "",
+              "");
+          _users.add(user);
+          key.currentState.insertItem(_users.length - 1);
+        });
+      });
     } on FirebaseAuthException catch (e) {
       print(e.code);
     } catch (e) {
@@ -64,57 +105,14 @@ class AdminDashboardState extends State<AdminDashboard>
     }
   }
 
-  // Used to build list items that haven't been removed.
-  Widget _buildItem(
-      BuildContext context, int index, Animation<double> animation) {
-    return UserCard(
-      animation: animation,
-      item: _list[index],
-      selected: _selectedItem == _list[index],
-      onTap: () {
-        setState(() {
-          _selectedItem = _selectedItem == _list[index] ? null : _list[index];
-        });
-      },
-    );
-  }
-
-  Widget _buildRemovedItem(
-      int item, BuildContext context, Animation<double> animation) {
-    return UserCard(
-      animation: animation,
-      item: item,
-      selected: false,
-      // No gesture detector here: we don't want removed items to be interactive.
-    );
-  }
-
-  // Insert the "next item" into the list model.
-  void _insert() {
-    final int index =
-    _selectedItem == null ? _list.length : _list.indexOf(_selectedItem);
-    _list.insert(index, _nextItem++);
-  }
-
-  // Remove the selected item from the list model.
-  void _remove() {
-    if (_selectedItem != null) {
-      _list.removeAt(_list.indexOf(_selectedItem));
-      setState(() {
-        _selectedItem = null;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: AppBar(
         title: Text("Admin panel"),
-        backgroundColor: Color.fromARGB(100, 212, 56, 255),
+        backgroundColor: Colors.deepPurple[700],
       ),
-      body:
-       Stack(fit: StackFit.expand, children: <Widget>[
+      body: Stack(fit: StackFit.expand, children: <Widget>[
         new Image(
           image: new AssetImage("assets/background.jpeg"),
           fit: BoxFit.cover,
@@ -133,17 +131,20 @@ class AdminDashboardState extends State<AdminDashboard>
             // isMaterialAppTheme: true,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: UserListView(
-                _listKey,
-                _list,
-                _selectedItem
+              child: AnimatedList(
+                key: key,
+                initialItemCount: _users.length,
+                itemBuilder: (context, index, animation) =>
+                    buildItem(_users[index], index, animation),
+
               ),
             )),
       ]),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _insert,
         icon: Icon(Icons.add_circle_outline),
         label: Text('Add User'),
+        backgroundColor: Colors.deepPurple[700],
+        onPressed: _showInsertUserPopup,
       ),
       drawer: Drawer(
         child: Container(
@@ -192,14 +193,76 @@ class AdminDashboardState extends State<AdminDashboard>
     if (mounted) {
       super.initState();
       _getUser();
-
-      _list = ListModel<int>(
-        listKey: _listKey,
-        initialItems: <int>[],
-        removedItemBuilder: _buildRemovedItem,
-      );
-      _nextItem = 0;
+      _getAllUsers();
     }
+  }
+
+  Widget buildItem(UserModel user, int index, Animation<double> animation) {
+    return UserCardItem(
+      user: user,
+      animation: animation,
+      onClick: () => _showInsertUserPopup(),
+    );
+  }
+
+  _onSubmitCall() async {
+    UserCredential userCredential;
+    CollectionReference users = FirebaseFirestore.instance.collection('users');
+    try {
+      await auth
+          .createUserWithEmailAndPassword(
+              email: emailController.text, password: passwordController.text)
+          .then((value) => {
+                auth.signOut(),
+                users
+                    .add({
+                      'full_name': nameController.text,
+                      'uid': value.user.uid,
+                      'type': userType,
+                      'email': emailController.text,
+                      'admin_id': adminIdController.text
+                    })
+                    .then((value) => {
+                          print("User Added"),
+                          //_getAllUsers(),
+                          Navigator.of(context, rootNavigator: true).pop(),
+                          nameController.text = "",
+                          passwordController.text = "",
+                          adminIdController.text = "",
+                          emailController.text = "",
+                        })
+                    .catchError((error) => print("Failed to add user: $error"))
+              });
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        print('The password provided is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        print('The account already exists for that email.');
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  _onUserTypeSelect(String type) {
+    this.userType = type;
+  }
+
+  _showInsertUserPopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return new AddNewUserDialog(
+          adminIdController: adminIdController,
+          emailController: emailController,
+          nameController: nameController,
+          passwordController: passwordController,
+          typeController: typeController,
+          onSubmitPressed: () => {_onSubmitCall()},
+          onTypeSelect: (type) => {_onUserTypeSelect(type)},
+        );
+      },
+    );
   }
 }
 
