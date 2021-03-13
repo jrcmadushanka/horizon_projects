@@ -7,7 +7,7 @@ class UserCardItem extends StatelessWidget{
 
   final UserModel user;
   final Animation animation;
-  final VoidCallback onClick;
+  final Function(UserModel) onClick;
 
   const UserCardItem({Key key, @required this.user, @required this.animation, @required this.onClick}) : super(key: key);
 
@@ -21,7 +21,7 @@ class UserCardItem extends StatelessWidget{
         sizeFactor: animation,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-         onLongPress: onClick,
+         onLongPress: () => onClick(user),
          // onTap: ,
           // child: SizedBox(
           //   height: 80.0,

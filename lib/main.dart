@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:form_field_validator/form_field_validator.dart';
 import 'package:horizon_projects/adminDashboard.dart';
 import 'package:horizon_projects/widget/defaultButton.dart';
 
@@ -60,7 +61,7 @@ class LoginPageState extends State<LoginPage>
   @override
   void dispose() {
     super.dispose();
-    authListener.cancel() ;
+    authListener.cancel();
   }
 
   Future<void> _getUser() async {
@@ -152,11 +153,17 @@ class LoginPageState extends State<LoginPage>
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
                         new TextFormField(
-                          decoration: new InputDecoration(
-                              labelText: "Admin ID", fillColor: Colors.white),
-                          controller: adminIdController,
-                          keyboardType: TextInputType.visiblePassword,
-                        ),
+                            decoration: new InputDecoration(
+                                labelText: "Admin ID", fillColor: Colors.white),
+                            controller: adminIdController,
+                            keyboardType: TextInputType.visiblePassword,
+                            autovalidateMode: AutovalidateMode.onUserInteraction,
+                            validator: MultiValidator([
+                              RequiredValidator(errorText: "* Required"),
+                              MinLengthValidator(4,
+                                  errorText:
+                                      "ID should be atleast 4 characters"),
+                            ])),
                         new Padding(
                           padding: const EdgeInsets.only(top: 20.0),
                         ),
@@ -241,15 +248,30 @@ class LoginPageState extends State<LoginPage>
                           keyboardType: TextInputType.emailAddress,
                           controller: _emailController,
                           readOnly: _adminEmail != "",
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          validator: MultiValidator([
+                            EmailValidator(errorText: "Invalid Email"),
+                            RequiredValidator(errorText: "* Required")
+                          ]),
                         ),
                         new TextFormField(
-                          decoration: new InputDecoration(
-                            labelText: "Enter Password",
-                          ),
-                          obscureText: true,
-                          keyboardType: TextInputType.text,
-                          controller: passwordController,
-                        ),
+                            decoration: new InputDecoration(
+                              labelText: "Enter Password",
+                            ),
+                            obscureText: true,
+                            keyboardType: TextInputType.text,
+                            controller: passwordController,
+                            autovalidateMode:
+                            AutovalidateMode.onUserInteraction,
+                            validator: MultiValidator([
+                              RequiredValidator(errorText: "* Required"),
+                              MinLengthValidator(6,
+                                  errorText:
+                                      "Password should be atleast 6 characters"),
+                              MaxLengthValidator(15,
+                                  errorText:
+                                      "Password should not be greater than 15 characters")
+                            ])),
                         new Padding(
                           padding: const EdgeInsets.only(top: 60.0),
                         ),
