@@ -145,7 +145,7 @@ class MyStatelessWidget extends StatelessWidget {
 
     return DefaultTabController(
       initialIndex: 1,
-      length: 3,
+      length: 2,
       child: Scaffold(
         appBar: AppBar(
           title: Text('Projects'),
@@ -159,9 +159,9 @@ class MyStatelessWidget extends StatelessWidget {
                 text: 'Project List',
                 icon: Icon(Icons.line_style),
               ),
-              Tab(
-                icon: Icon(Icons.brightness_5_sharp),
-              ),
+//              Tab(
+//                icon: Icon(Icons.brightness_5_sharp),
+//              ),
             ],
           ),
         ),
@@ -262,9 +262,9 @@ class MyStatelessWidget extends StatelessWidget {
                 ),
 
 
-            Center(
-              child: Text('It\'s sunny here'),
-            ),
+//            Center(
+//              child: Text('It\'s sunny here'),
+//            ),
 
 
           ],
