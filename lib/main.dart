@@ -10,7 +10,7 @@ import 'package:horizon_projects/adminDashboard.dart';
 import 'package:horizon_projects/projectList.dart';
 import 'package:horizon_projects/widget/defaultButton.dart';
 
-import 'createProject.dart';
+import 'managerDashBoard.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -85,7 +85,7 @@ class LoginPageState extends State<LoginPage>
                       Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => MyStatelessWidget()));
+                              builder: (context) => ManagerDashboard()));
                     }
                   });
                 })

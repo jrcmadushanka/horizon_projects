@@ -101,6 +101,7 @@ class AddNewUserDialogState extends State<AddNewUserDialog> {
                   value: typeController.text == "" ? null : typeController.text,
                   disabledHint: Text(typeController.text),
                   hint: Text("Select the user type"),
+
                 ),
                 if (_showAdminFields)
                   new TextFormField(
