@@ -3,8 +3,9 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_field/date_field.dart';
 import 'package:flutter/material.dart';
+import 'package:form_field_validator/form_field_validator.dart';
+import 'package:horizon_projects/widget/defaultButton.dart';
 import 'package:item_selector/item_selector.dart';
-import 'package:select_form_field/select_form_field.dart';
 
 import 'model/models.dart';
 
@@ -108,10 +109,9 @@ class ManagerDashboard extends StatefulWidget {
   ];
 
   _getAllEmployees() async {
-
     FirebaseFirestore.instance
         .collection('users')
-        .where('type', whereIn:['MANAGER', 'EMPLOYER'])
+        .where('type', whereIn: ['MANAGER', 'EMPLOYER'])
         .get()
         .then((value) {
           print(value.docs.length.toString());
@@ -132,14 +132,16 @@ class ManagerDashboard extends StatefulWidget {
 
             if (userModel.type == "MANAGER") {
               _managers.add(userModel);
-              _managerDropDownItems.add(new DropdownMenuItem(child: Text(userModel.full_name), value: userModel.uid));
-
+              _managerDropDownItems.add(new DropdownMenuItem(
+                  child: Text(userModel.full_name), value: userModel.uid));
             } else {
               _employee.add(userModel);
             }
           });
 
-          print(_employee.length.toString() + " Man =>  " + _managers.length.toString());
+          print(_employee.length.toString() +
+              " Man =>  " +
+              _managers.length.toString());
         });
   }
 
@@ -154,6 +156,8 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
 
   ManagerDashBoardState(this._managerDropDownItems);
 
+  final key = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     {
@@ -162,6 +166,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
         length: 2,
         child: Scaffold(
           appBar: AppBar(
+            backgroundColor: Color.fromARGB(100, 212, 56, 255),
             title: Text('Projects'),
             bottom: TabBar(
               tabs: <Widget>[
@@ -182,6 +187,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                   padding: const EdgeInsets.all(20.0),
                   child: SingleChildScrollView(
                     child: new Form(
+                      key: key,
                       child: new Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: <Widget>[
@@ -190,6 +196,9 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                                 labelText: "Project Name",
                                 fillColor: Colors.white),
                             keyboardType: TextInputType.emailAddress,
+                            validator: RequiredValidator(errorText: "Required"),
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                           ),
                           new Padding(
                             padding: const EdgeInsets.only(top: 10.0),
@@ -202,11 +211,17 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                               suffixIcon: Icon(Icons.event_note),
                               labelText: 'Start Date',
                             ),
-                            mode: DateTimeFieldPickerMode.date,
-                            autovalidateMode: AutovalidateMode.always,
-                            validator: (e) => (e?.day ?? 0) == 1
-                                ? 'Please not the first day'
-                                : null,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            validator: (DateTime dateTime) {
+                              if (dateTime == null) {
+                                return "Date Time Required";
+                              } else if (dateTime.millisecondsSinceEpoch <
+                                  DateTime.now().millisecondsSinceEpoch) {
+                                return "Date must be in future";
+                              }
+                              return null;
+                            },
                             onDateSelected: (DateTime value) {
                               print(value);
                             },
@@ -221,11 +236,17 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                               suffixIcon: Icon(Icons.event_note),
                               labelText: 'End Date',
                             ),
-                            mode: DateTimeFieldPickerMode.date,
-                            autovalidateMode: AutovalidateMode.always,
-                            validator: (e) => (e?.day ?? 0) == 1
-                                ? 'Please not the first day'
-                                : null,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            validator: (DateTime dateTime) {
+                              if (dateTime == null) {
+                                return "Date Time Required";
+                              } else if (dateTime.millisecondsSinceEpoch <
+                                  DateTime.now().millisecondsSinceEpoch) {
+                                return "Date must be in future";
+                              }
+                              return null;
+                            },
                             onDateSelected: (DateTime value) {
                               print(value);
                             },
@@ -233,15 +254,29 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                           new TextFormField(
                             decoration: new InputDecoration(
                                 labelText: "Project Cost", hintText: 'Rs.'),
+                            validator: RequiredValidator(errorText: "Required"),
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                           ),
                           new TextFormField(
                             decoration: new InputDecoration(
                                 labelText: "Client", hintText: 'Client name'),
+                            validator: RequiredValidator(errorText: "Required"),
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                           ),
                           new DropdownButtonFormField(
                             icon: Icon(Icons.account_circle),
                             items: _managerDropDownItems,
                             hint: Text("Select a Project Manager"),
+                            validator: (value) {
+                              if (value == null) {
+                                return "Required";
+                              }
+                              return null;
+                            },
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                             onChanged: (val) => print(val),
                             onSaved: (val) => print(val),
                           ),
@@ -269,7 +304,10 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                             onChanged: (val) => {},
                             hint: Text("Select the status"),
                             value: "created",
-                          )
+                          ),
+                          DefaultButton("Create Project", () {
+                            key.currentState.validate();
+                          })
                         ],
                       ),
                     ),
