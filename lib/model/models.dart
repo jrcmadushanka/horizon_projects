@@ -9,3 +9,16 @@ class UserModel{
 
   UserModel(this.uid, this.full_name, this.admin_id, this.email, this.type, this.password, this.doc);
 }
+
+class ProjectModel{
+  final String project_name;
+  final String start_date;
+  final String end_date;
+  final String project_cost;
+  final String project_manager;
+  final String client;
+  final String status;
+
+  ProjectModel(this.project_name, this.start_date, this.end_date, this.project_cost, this.project_manager, this.client, this.status);
+
+}
