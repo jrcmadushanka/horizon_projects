@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:item_selector/item_selector.dart';
 
-void main() => runApp(ExampleApp());
+//void main() => runApp(ExampleApp());
 
 final pages = <PageData>[
   PageData(

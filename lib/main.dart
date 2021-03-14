@@ -7,7 +7,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:horizon_projects/adminDashboard.dart';
+import 'package:horizon_projects/projectList.dart';
 import 'package:horizon_projects/widget/defaultButton.dart';
+
+import 'createProject.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -78,6 +81,11 @@ class LoginPageState extends State<LoginPage>
                           context,
                           MaterialPageRoute(
                               builder: (context) => AdminDashboard()));
+                    } else if (doc["type"].toString() == "MANAGER") {
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => MyStatelessWidget()));
                     }
                   });
                 })
@@ -121,7 +129,7 @@ class LoginPageState extends State<LoginPage>
                   setState(() {
                     _adminName = doc["full_name"];
                     _adminEmail = doc["email"];
-                    _emailController.text = "**************************";
+                    _emailController.text = doc["email"];
                   });
                   Navigator.pop(context);
                   return doc["full_name"];
@@ -157,7 +165,8 @@ class LoginPageState extends State<LoginPage>
                                 labelText: "Admin ID", fillColor: Colors.white),
                             controller: adminIdController,
                             keyboardType: TextInputType.visiblePassword,
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                             validator: MultiValidator([
                               RequiredValidator(errorText: "* Required"),
                               MinLengthValidator(4,
@@ -241,18 +250,21 @@ class LoginPageState extends State<LoginPage>
                     child: new Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
-                        new TextFormField(
-                          decoration: new InputDecoration(
-                              labelText: "Enter Email",
-                              fillColor: Colors.white),
-                          keyboardType: TextInputType.emailAddress,
-                          controller: _emailController,
-                          readOnly: _adminEmail != "",
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          validator: MultiValidator([
-                            EmailValidator(errorText: "Invalid Email"),
-                            RequiredValidator(errorText: "* Required")
-                          ]),
+                        Visibility(
+                          child: new TextFormField(
+                            decoration: new InputDecoration(
+                                labelText: "Enter Email",
+                                fillColor: Colors.white),
+                            keyboardType: TextInputType.emailAddress,
+                            controller: _emailController,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            validator: MultiValidator([
+                              EmailValidator(errorText: "Invalid Email"),
+                              RequiredValidator(errorText: "* Required")
+                            ]),
+                          ),
+                          visible: _adminEmail == "",
                         ),
                         new TextFormField(
                             decoration: new InputDecoration(
@@ -262,7 +274,7 @@ class LoginPageState extends State<LoginPage>
                             keyboardType: TextInputType.text,
                             controller: passwordController,
                             autovalidateMode:
-                            AutovalidateMode.onUserInteraction,
+                                AutovalidateMode.onUserInteraction,
                             validator: MultiValidator([
                               RequiredValidator(errorText: "* Required"),
                               MinLengthValidator(6,
