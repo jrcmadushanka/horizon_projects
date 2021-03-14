@@ -79,11 +79,12 @@ class RectSelection extends ItemSelection {
 }
 
 class ManagerDashboard extends StatefulWidget {
-  ManagerDashboard({Key key}) : super(key: key){
+  ManagerDashboard({Key key}) : super(key: key) {
     _getAllEmployees();
   }
 
   final List<UserModel> _managers = [];
+  final List<DropdownMenuItem> _managerDropDownItems = [];
   final List<UserModel> _employee = [];
 
   final List<Map<String, dynamic>> _items = [
@@ -107,44 +108,51 @@ class ManagerDashboard extends StatefulWidget {
   ];
 
   _getAllEmployees() async {
-    UserModel user;
+
     FirebaseFirestore.instance
         .collection('users')
-        .where('type', arrayContainsAny: ["MANAGER", "EMPLOYEE"])
+        .where('type', whereIn:['MANAGER', 'EMPLOYER'])
         .get()
-        .then((value) => {
-              value.docs.forEach((element) => {
-                    user = UserModel(
-                        element.data().containsKey("uid") ? element["uid"] : "",
-                        element.data().containsKey("full_name")
-                            ? element["full_name"]
-                            : "",
-                        element.data().containsKey("admin_id")
-                            ? element["admin_id"]
-                            : "",
-                        element.data().containsKey("email")
-                            ? element["email"]
-                            : "",
-                        element.data().containsKey("type")
-                            ? element["type"]
-                            : "",
-                        "",
-                        element.id)
-                  }),
-              if (user.type == "MANAGER")
-                {_managers.add(user)}
-              else
-                {_employee.add(user)}
-            });
+        .then((value) {
+          print(value.docs.length.toString());
+          UserModel userModel;
+          value.docs.forEach((element) {
+            userModel = UserModel(
+                element.data().containsKey("uid") ? element["uid"] : "",
+                element.data().containsKey("full_name")
+                    ? element["full_name"]
+                    : "",
+                element.data().containsKey("admin_id")
+                    ? element["admin_id"]
+                    : "",
+                element.data().containsKey("email") ? element["email"] : "",
+                element.data().containsKey("type") ? element["type"] : "",
+                "",
+                element.id);
+
+            if (userModel.type == "MANAGER") {
+              _managers.add(userModel);
+              _managerDropDownItems.add(new DropdownMenuItem(child: Text(userModel.full_name), value: userModel.uid));
+
+            } else {
+              _employee.add(userModel);
+            }
+          });
+
+          print(_employee.length.toString() + " Man =>  " + _managers.length.toString());
+        });
   }
 
   @override
   State<StatefulWidget> createState() {
-    return new ManagerDashBoardState();
+    return new ManagerDashBoardState(_managerDropDownItems);
   }
 }
 
-class ManagerDashBoardState extends State<ManagerDashboard>{
+class ManagerDashBoardState extends State<ManagerDashboard> {
+  final List<DropdownMenuItem> _managerDropDownItems;
+
+  ManagerDashBoardState(this._managerDropDownItems);
 
   @override
   Widget build(BuildContext context) {
@@ -203,7 +211,8 @@ class ManagerDashBoardState extends State<ManagerDashboard>{
                               print(value);
                             },
                           ),
-                          new Padding(padding: const EdgeInsets.only(top: 10.0)),
+                          new Padding(
+                              padding: const EdgeInsets.only(top: 10.0)),
                           DateTimeFormField(
                             decoration: const InputDecoration(
                               hintStyle: TextStyle(color: Colors.black45),
@@ -229,13 +238,10 @@ class ManagerDashBoardState extends State<ManagerDashboard>{
                             decoration: new InputDecoration(
                                 labelText: "Client", hintText: 'Client name'),
                           ),
-                          new SelectFormField(
-                            type: SelectFormFieldType.dropdown,
-                            // or can be dialog
-                            initialValue: 'circle',
+                          new DropdownButtonFormField(
                             icon: Icon(Icons.account_circle),
-                            labelText: 'Project Manager',
-//                      items: _items,
+                            items: _managerDropDownItems,
+                            hint: Text("Select a Project Manager"),
                             onChanged: (val) => print(val),
                             onSaved: (val) => print(val),
                           ),
