@@ -14,8 +14,10 @@ class Task{
   final String title;
   final String description;
   final String employee;
+  final String employeeName;
+  final String status;
 
-  Task(this.title, this.description, this.employee);
+  Task(this.title, this.description, this.employee, this.employeeName, this.status);
 }
 
 class ProjectModel{

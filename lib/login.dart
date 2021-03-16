@@ -40,6 +40,7 @@ class LoginPageState extends State<LoginPage>
         print('User is currently signed out!');
       } else {
         _getUser();
+        _getItems();
       }
     });
   }
@@ -73,6 +74,24 @@ class LoginPageState extends State<LoginPage>
           // });
         })
       })
+          .onError((error, stackTrace) => {print(stackTrace)});
+    } on FirebaseAuthException catch (e) {
+      print(e.code);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+
+  _getItems() async {
+    try {
+      FirebaseFirestore.instance
+          .collection('test')
+          .where('items', arrayContains: "rwffg5")
+          .get()
+          .then((QuerySnapshot querySnapshot) => {
+            print(querySnapshot.docs[0])
+        })
           .onError((error, stackTrace) => {print(stackTrace)});
     } on FirebaseAuthException catch (e) {
       print(e.code);

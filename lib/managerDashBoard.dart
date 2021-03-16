@@ -11,7 +11,6 @@ import 'package:item_selector/item_selector.dart';
 
 import 'model/models.dart';
 
-
 class RectSelection extends ItemSelection {
   RectSelection(this.columns);
 
@@ -45,8 +44,10 @@ class RectSelection extends ItemSelection {
     }
 
     // apply selection changes
-    addAll(ItemSelection.copy(newSelection)..removeAll(oldSelection));
-    removeAll(ItemSelection.copy(oldSelection)..removeAll(newSelection));
+    addAll(ItemSelection.copy(newSelection)
+      ..removeAll(oldSelection));
+    removeAll(ItemSelection.copy(oldSelection)
+      ..removeAll(newSelection));
 
     oldSelection = newSelection;
     return true;
@@ -72,65 +73,68 @@ class ManagerDashboard extends StatefulWidget {
         .where('type', whereIn: ['MANAGER', 'EMPLOYER'])
         .get()
         .then((value) {
-          print(value.docs.length.toString());
-          UserModel userModel;
-          value.docs.forEach((element) {
-            userModel = UserModel(
-                element.data().containsKey("uid") ? element["uid"] : "",
-                element.data().containsKey("full_name")
-                    ? element["full_name"]
-                    : "",
-                element.data().containsKey("admin_id")
-                    ? element["admin_id"]
-                    : "",
-                element.data().containsKey("email") ? element["email"] : "",
-                element.data().containsKey("type") ? element["type"] : "",
-                "",
-                element.id);
+      print(value.docs.length.toString());
+      UserModel userModel;
+      value.docs.forEach((element) {
+        userModel = UserModel(
+            element.data().containsKey("uid") ? element["uid"] : "",
+            element.data().containsKey("full_name")
+                ? element["full_name"]
+                : "",
+            element.data().containsKey("admin_id")
+                ? element["admin_id"]
+                : "",
+            element.data().containsKey("email") ? element["email"] : "",
+            element.data().containsKey("type") ? element["type"] : "",
+            "",
+            element.id);
 
-            if (userModel.type == "MANAGER") {
-              _managers.add(userModel);
-              _managerDropDownItems.add(new DropdownMenuItem(
-                  child: Text(userModel.full_name), value: userModel.uid));
-            } else {
-              _employee.add(userModel);
-              _employeeDropDownItems.add(new DropdownMenuItem(
-                  child: Text(userModel.full_name), value: userModel.uid));
-            }
-          });
+        if (userModel.type == "MANAGER") {
+          _managers.add(userModel);
+          _managerDropDownItems.add(new DropdownMenuItem(
+              child: Text(userModel.full_name), value: userModel.uid));
+        } else {
+          _employee.add(userModel);
+          _employeeDropDownItems.add(new DropdownMenuItem(
+              child: Text(userModel.full_name), value: userModel.uid));
+        }
+      });
 
-          print(_employee.length.toString() +
-              " Man =>  " +
-              _managers.length.toString());
-        });
+      print(_employee.length.toString() +
+          " Man =>  " +
+          _managers.length.toString());
+    });
   }
 
   _getAllProjects() async {
-
-    FirebaseFirestore.instance
-        .collection('projects')
-        .get()
-        .then((value) {
+    FirebaseFirestore.instance.collection('projects').get().then((value) {
       print("Length of project list " + value.docs.length.toString());
       ProjectModel projectModel;
       value.docs.forEach((element) {
         projectModel = ProjectModel(
-            element.data().containsKey("project_name") ? element["project_name"] : "",
-            element.data().containsKey("start_date") ? element["start_date"] : "",
+            element.data().containsKey("project_name")
+                ? element["project_name"]
+                : "",
+            element.data().containsKey("start_date")
+                ? element["start_date"]
+                : "",
             element.data().containsKey("end_date") ? element["end_date"] : "",
-            element.data().containsKey("project_cost") ? element["project_cost"] : "",
-            element.data().containsKey("project_manager") ? element["project_manager"] : "",
+            element.data().containsKey("project_cost")
+                ? element["project_cost"]
+                : "",
+            element.data().containsKey("project_manager")
+                ? element["project_manager"]
+                : "",
             element.data().containsKey("client") ? element["client"] : "",
             element.data().containsKey("status") ? element["status"] : ""
 //            element.id);
-
 
         );
         _project.add(projectModel);
 
 //        print(projectModel.project_name + " " + projectModel.project_manager + " " + projectModel.status +' project');
-          print(_project[0].project_name);
-          print(_project.length);
+        print(_project[0].project_name);
+        print(_project.length);
       });
     });
   }
@@ -138,7 +142,8 @@ class ManagerDashboard extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return new ManagerDashBoardState(
-        _managerDropDownItems, _employeeDropDownItems, _employee, _project);
+        _managerDropDownItems, _employeeDropDownItems, _employee, _project,
+        _managers);
   }
 }
 
@@ -146,20 +151,35 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
   final List<DropdownMenuItem> _managerDropDownItems;
   final List<DropdownMenuItem> _employeeDropDownItems;
   final List<UserModel> _employee;
+  final List<UserModel> _manager;
   List<Widget> _taskItems = [];
   final List<Task> _tasks = [];
 
   final TextEditingController taskTitleController = TextEditingController();
+  final TextEditingController projectNameController = TextEditingController();
+  final TextEditingController projectCostController = TextEditingController();
+  final TextEditingController clientController = TextEditingController();
   final TextEditingController taskDescriptionController =
-      TextEditingController();
+  TextEditingController();
+
+  String _taskStatus = "created";
+  String _projectStatus = "created";
   String _assignedEmployee;
+  String _assigned;
+  String _assignedManager;
+  String _assignedManagerName;
+
+  DateTime startDate;
+  DateTime endDate;
+
   final List<ProjectModel> _project;
 
-
-  ManagerDashBoardState(
-      this._managerDropDownItems, this._employeeDropDownItems, this._employee,  this._project);
+  ManagerDashBoardState(this._managerDropDownItems, this._employeeDropDownItems,
+      this._employee, this._project, this._manager);
 
   final key = GlobalKey<FormState>();
+  CollectionReference projects =
+  FirebaseFirestore.instance.collection('projects');
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +221,8 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                             keyboardType: TextInputType.emailAddress,
                             validator: RequiredValidator(errorText: "Required"),
                             autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
+                            AutovalidateMode.onUserInteraction,
+                            controller: projectNameController,
                           ),
                           new Padding(
                             padding: const EdgeInsets.only(top: 10.0),
@@ -215,18 +236,20 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                               labelText: 'Start Date',
                             ),
                             autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
+                            AutovalidateMode.onUserInteraction,
                             validator: (DateTime dateTime) {
                               if (dateTime == null) {
                                 return "Date Time Required";
                               } else if (dateTime.millisecondsSinceEpoch <
-                                  DateTime.now().millisecondsSinceEpoch) {
+                                  DateTime
+                                      .now()
+                                      .millisecondsSinceEpoch) {
                                 return "Date must be in future";
                               }
                               return null;
                             },
                             onDateSelected: (DateTime value) {
-                              print(value);
+                              startDate = value;
                             },
                           ),
                           new Padding(
@@ -240,18 +263,20 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                               labelText: 'End Date',
                             ),
                             autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
+                            AutovalidateMode.onUserInteraction,
                             validator: (DateTime dateTime) {
                               if (dateTime == null) {
                                 return "Date Time Required";
                               } else if (dateTime.millisecondsSinceEpoch <
-                                  DateTime.now().millisecondsSinceEpoch) {
+                                  DateTime
+                                      .now()
+                                      .millisecondsSinceEpoch) {
                                 return "Date must be in future";
                               }
                               return null;
                             },
                             onDateSelected: (DateTime value) {
-                              print(value);
+                              endDate = value;
                             },
                           ),
                           new TextFormField(
@@ -259,14 +284,16 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                                 labelText: "Project Cost", hintText: 'Rs.'),
                             validator: RequiredValidator(errorText: "Required"),
                             autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
+                            AutovalidateMode.onUserInteraction,
+                            controller: projectCostController,
                           ),
                           new TextFormField(
                             decoration: new InputDecoration(
                                 labelText: "Client", hintText: 'Client name'),
                             validator: RequiredValidator(errorText: "Required"),
                             autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
+                            AutovalidateMode.onUserInteraction,
+                            controller: clientController,
                           ),
                           new DropdownButtonFormField(
                             icon: Icon(Icons.account_circle),
@@ -279,8 +306,16 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                               return null;
                             },
                             autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            onChanged: (val) => print(val),
+                            AutovalidateMode.onUserInteraction,
+                            onChanged: (val) => {
+                            print(val),
+                            _assignedManager = val,
+                            _manager.forEach((element) {
+                              if (_assignedManager == element.uid) {
+                                _assignedManagerName = element.full_name;
+                              }
+                            })
+                          },
                             onSaved: (val) => print(val),
                           ),
                           new DropdownButtonFormField(
@@ -304,7 +339,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                                 value: "onHold",
                               ),
                             ],
-                            onChanged: (val) => {},
+                            onChanged: (val) => { _projectStatus = val},
                             hint: Text("Select the status"),
                             value: "created",
                           ),
@@ -329,20 +364,21 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                                     )
                                   ],
                                   mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  MainAxisAlignment.spaceBetween,
                                 ),
                               )),
                           Column(
                             children: _taskItems,
                           ),
                           DefaultButton("Create Project", () {
-                            key.currentState.validate();
+                            if(key.currentState.validate()){
+                              _createProject();
+                            }
                           })
                         ],
                       ),
                     ),
                   )),
-
               ItemSelectionController(
                 child: ListView.builder(
                   itemCount: _project.length,
@@ -361,7 +397,37 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
     }
   }
 
+  _createProject() {
+    projects
+        .add({
+      'client': clientController.text,
+      'end_date': endDate.millisecondsSinceEpoch,
+      'start_date': startDate.millisecondsSinceEpoch,
+      'cost': projectCostController.text,
+      'manager': _assignedManager,
+      'manager_name': _assignedManagerName,
+      'name': projectNameController.text,
+      'status': _projectStatus
+    })
+        .then((value) =>
+    {
+      print("User Added"),
+      print(value.id),
+      clientController.text = "",
+      projectCostController.text = "",
+      projectNameController.text = "",
+      _assignedManager = "",
+      _assignedManagerName = "",
+      _projectStatus = "created",
+      endDate = null,
+      startDate = null
+
+    })
+        .catchError((error) => print("Failed to add user: $error"));
+  }
+
   _showTaskAddingPopUp() {
+    String status = "created";
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -405,15 +471,35 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                       },
                       onSaved: (val) => print(val),
                     ),
+                    new DropdownButtonFormField(
+                      items: [
+                        new DropdownMenuItem(
+                          child: Text("Created"),
+                          value: "created",
+                        ),
+                        new DropdownMenuItem(
+                            child: Text("Ongoing"), value: "onGoing"),
+                        new DropdownMenuItem(
+                          child: Text("Finished"),
+                          value: "finished",
+                        ),
+                        new DropdownMenuItem(
+                          child: Text("Cancelled"),
+                          value: "cancelled",
+                        ),
+                        new DropdownMenuItem(
+                          child: Text("On Hold"),
+                          value: "onHold",
+                        ),
+                      ],
+                      onChanged: (val) => { status = val},
+                      hint: Text("Select the status"),
+                      value: "created",
+                    ),
                     Padding(
                       padding: EdgeInsets.all(15),
                       child: DefaultButton("Submit Task", () {
                         if (key.currentState.validate()) {
-                          Task task = Task(
-                              taskTitleController.text,
-                              taskDescriptionController.text,
-                              _assignedEmployee);
-
                           String userName = "";
 
                           _employee.forEach((element) {
@@ -422,58 +508,14 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                             }
                           });
 
-                          _taskItems.add(Padding(
-                              padding: EdgeInsets.all(10),
-                              child: Card(
-                                  elevation: 5,
-                                  child: Padding(
-                                      padding: EdgeInsets.all(20),
-                                      child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Expanded(
-                                                child: Column(children: [
-                                              Padding(
-                                                  padding: EdgeInsets.all(5)),
-                                              Text(
-                                                task.title,
-                                                style: TextStyle(
-                                                    color: Colors.deepPurple,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              Text(task.description,
-                                                  style: TextStyle(
-                                                      color: Colors.grey)),
-                                              Padding(
-                                                  padding: EdgeInsets.all(5)),
-                                            ])),
-                                            Padding(
-                                              padding: EdgeInsets.zero,
-                                            ),
-                                            Column(
-                                              children: [
-                                                Padding(
-                                                    padding: EdgeInsets.all(5)),
-                                                Icon(Icons
-                                                    .emoji_people_outlined),
-                                                Text(
-                                                  userName,
-                                                  style: TextStyle(
-                                                      color: Colors.deepPurple,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Padding(
-                                                    padding: EdgeInsets.all(5)),
-                                              ],
-                                            ),
-                                            Padding(
-                                                padding: EdgeInsets.all(10)),
-                                          ])))));
+                          Task task = Task(
+                              taskTitleController.text,
+                              taskDescriptionController.text,
+                              _assignedEmployee,
+                              userName,
+                              status);
+
+                          _taskItems.add(addTaskItem(task));
                           this.setState(() {
                             _taskItems = _taskItems;
                           });
@@ -495,6 +537,42 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
   }
 }
 
+Widget addTaskItem(Task task) {
+  return Card(
+    clipBehavior: Clip.antiAlias,
+    child: Column(
+      children: [
+        ListTile(
+          title: Text(task.title.toString(),
+              style:
+              TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          subtitle: Text(
+            "Status : Created",
+            style: TextStyle(color: Colors.black.withOpacity(0.6)),
+          ),
+          tileColor: Colors.deepPurpleAccent[100],
+        ),
+        ListTile(
+          title: Text("Description",
+              style:
+              TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          subtitle: Text(
+            task.description,
+            style: TextStyle(color: Colors.black.withOpacity(0.8)),
+          ),
+        ),
+        ListTile(
+          title: Text(task.employeeName),
+          subtitle: Text(
+            "EID : " + task.employee,
+            style: TextStyle(color: Colors.black.withOpacity(0.6)),
+          ),
+        )
+      ],
+    ),
+  );
+}
+
 Widget buildListItem(BuildContext context, int index, bool selected) {
   return Card(
     margin: EdgeInsets.all(10),
@@ -503,7 +581,7 @@ Widget buildListItem(BuildContext context, int index, bool selected) {
       leading: Icon(Icons.insert_drive_file),
       contentPadding: EdgeInsets.all(10),
       title: Text('Project ' + index.toString()),
-      subtitle: Text('Status : ' ),
+      subtitle: Text('Status : '),
     ),
   );
 }

@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-//import 'package:firebase_database/ui/firebase_animated_list.dart' ;
 import 'package:flutter/material.dart';
-import 'package:horizon_projects/main.dart';
 import 'package:horizon_projects/model/models.dart';
 import 'package:horizon_projects/widget/AddUserDialog.dart';
 import 'package:horizon_projects/widget/UserCardItem.dart';
@@ -24,7 +21,7 @@ class AdminDashboardState extends State<AdminDashboard>
   final TextEditingController nameController = new TextEditingController();
   final TextEditingController typeController = new TextEditingController();
 
-  Query get query => FirebaseFirestore.instance.collection('users').limit(20);
+  // Query get query => FirebaseFirestore.instance.collection('users').limit(20);
 
   final List<UserModel> _users = [];
   final key = GlobalKey<AnimatedListState>();
@@ -39,14 +36,13 @@ class AdminDashboardState extends State<AdminDashboard>
           .collection('users')
           .where('uid', isEqualTo: auth.currentUser.uid)
           .get()
-          .then((QuerySnapshot querySnapshot) =>
-      {
-        querySnapshot.docs.forEach((doc) {
-          setState(() {
-            _user = doc;
-          });
-        })
-      })
+          .then((QuerySnapshot querySnapshot) => {
+                querySnapshot.docs.forEach((doc) {
+                  setState(() {
+                    _user = doc;
+                  });
+                })
+              })
           .onError((error, stackTrace) => {print(stackTrace)});
     } on FirebaseAuthException catch (e) {
       print(e.code);
@@ -55,7 +51,7 @@ class AdminDashboardState extends State<AdminDashboard>
     }
   }
 
-  Future<void> _getAllUsers() async {
+  _getAllUsers() async {
     try {
       FirebaseFirestore.instance
           .collection('users')
@@ -63,9 +59,9 @@ class AdminDashboardState extends State<AdminDashboard>
           .listen((event) {
         for (var i = 0; i <= _users.length - 1; i++) {
           key.currentState.removeItem(0,
-                  (BuildContext context, Animation<double> animation) {
-                return Container();
-              });
+              (BuildContext context, Animation<double> animation) {
+            return Container();
+          });
         }
         _users.clear();
         event.docs.forEach((element) {
@@ -94,17 +90,15 @@ class AdminDashboardState extends State<AdminDashboard>
     try {
       auth
           .signOut()
-          .then((value) =>
-      {
-        Navigator.pop(context),
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => LoginPage()))
-      })
-          .onError((error, stackTrace) =>
-      {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(new SnackBar(content: Text("Logout Failed")))
-      });
+          .then((value) => {
+                Navigator.pop(context),
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => LoginPage()))
+              })
+          .onError((error, stackTrace) => {
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(new SnackBar(content: Text("Logout Failed")))
+              });
     } on FirebaseAuthException catch (e) {
       print(e.code);
     } catch (e) {
@@ -130,7 +124,7 @@ class AdminDashboardState extends State<AdminDashboard>
             data: new ThemeData(
                 brightness: Brightness.dark,
                 inputDecorationTheme: new InputDecorationTheme(
-                  // hintStyle: new TextStyle(color: Colors.blue, fontSize: 20.0),
+                    // hintStyle: new TextStyle(color: Colors.blue, fontSize: 20.0),
                     labelStyle: new TextStyle(
                         color: Color.fromARGB(100, 224, 146, 252),
                         fontSize: 22.0),
@@ -159,7 +153,7 @@ class AdminDashboardState extends State<AdminDashboard>
                 image: AssetImage("assets/background.jpeg"),
                 fit: BoxFit.cover,
                 colorFilter:
-                new ColorFilter.mode(Colors.black54, BlendMode.hardLight)),
+                    new ColorFilter.mode(Colors.black54, BlendMode.hardLight)),
           ),
           child: ListView(
             // Important: Remove any padding from the ListView.
@@ -168,12 +162,12 @@ class AdminDashboardState extends State<AdminDashboard>
               DrawerHeader(
                 child: Center(
                     child: Text(
-                      _user != null
-                          ? "Welcome " + _user["full_name"].toString()
-                          : "",
-                      textScaleFactor: 1.5,
-                      style: new TextStyle(color: Colors.white),
-                    )),
+                  _user != null
+                      ? "Welcome " + _user["full_name"].toString()
+                      : "",
+                  textScaleFactor: 1.5,
+                  style: new TextStyle(color: Colors.white),
+                )),
                 decoration: BoxDecoration(
                   color: Color.fromARGB(100, 138, 57, 162),
                 ),
@@ -185,7 +179,6 @@ class AdminDashboardState extends State<AdminDashboard>
                 onTap: () {
                   _logout();
                 },
-                focusColor: Colors.black87,
               ),
             ],
           ),
@@ -228,31 +221,29 @@ class AdminDashboardState extends State<AdminDashboard>
       try {
         await auth
             .createUserWithEmailAndPassword(
-            email: emailController.text, password: passwordController.text)
-            .then((value) =>
-        {
-          auth.signOut(),
-          users
-              .add({
-            'full_name': nameController.text,
-            'uid': value.user.uid,
-            'type': userType,
-            'email': emailController.text,
-            'admin_id': adminIdController.text
-          })
-              .then((value) =>
-          {
-            print("User Added"),
-            Navigator.of(context, rootNavigator: true).pop(),
-            nameController.text = "",
-            passwordController.text = "",
-            adminIdController.text = "",
-            emailController.text = "",
-            typeController.text = ""
-          })
-              .catchError(
-                  (error) => print("Failed to add user: $error"))
-        });
+                email: emailController.text, password: passwordController.text)
+            .then((value) => {
+                  //auth.signOut(),
+                  users
+                      .add({
+                        'full_name': nameController.text,
+                        'uid': value.user.uid,
+                        'type': userType,
+                        'email': emailController.text,
+                        'admin_id': adminIdController.text
+                      })
+                      .then((value) => {
+                            print("User Added"),
+                            Navigator.of(context, rootNavigator: true).pop(),
+                            nameController.text = "",
+                            passwordController.text = "",
+                            adminIdController.text = "",
+                            emailController.text = "",
+                            typeController.text = ""
+                          })
+                      .catchError(
+                          (error) => print("Failed to add user: $error"))
+                });
       } on FirebaseAuthException catch (e) {
         if (e.code == 'weak-password') {
           print('The password provided is too weak.');
@@ -267,20 +258,19 @@ class AdminDashboardState extends State<AdminDashboard>
         await users
             .doc(selectedUserModel.doc)
             .update({
-          'full_name': nameController.text,
-          'email': emailController.text,
-          'admin_id': adminIdController.text
-        })
-            .then((value) =>
-        {
-          print("User Updated"),
-          Navigator.of(context, rootNavigator: true).pop(),
-          nameController.text = "",
-          passwordController.text = "",
-          adminIdController.text = "",
-          emailController.text = "",
-          typeController.text = ""
-        })
+              'full_name': nameController.text,
+              'email': emailController.text,
+              'admin_id': adminIdController.text
+            })
+            .then((value) => {
+                  print("User Updated"),
+                  Navigator.of(context, rootNavigator: true).pop(),
+                  nameController.text = "",
+                  passwordController.text = "",
+                  adminIdController.text = "",
+                  emailController.text = "",
+                  typeController.text = ""
+                })
             .catchError((error) => print("Failed to update user: $error"));
       }
     }
@@ -293,21 +283,20 @@ class AdminDashboardState extends State<AdminDashboard>
   _deleteUser(String doc) async {
     if (selectedUserModel != null) {
       CollectionReference users =
-      FirebaseFirestore.instance.collection('users');
+          FirebaseFirestore.instance.collection('users');
       await users
           .doc(selectedUserModel.doc)
           .delete()
-          .then((value) =>
-      {
-        print("User Deleted"),
-        selectedUserModel = null,
-        Navigator.of(context, rootNavigator: true).pop(),
-        nameController.text = "",
-        passwordController.text = "",
-        adminIdController.text = "",
-        emailController.text = "",
-        typeController.text = ""
-      })
+          .then((value) => {
+                print("User Deleted"),
+                selectedUserModel = null,
+                Navigator.of(context, rootNavigator: true).pop(),
+                nameController.text = "",
+                passwordController.text = "",
+                adminIdController.text = "",
+                emailController.text = "",
+                typeController.text = ""
+              })
           .catchError((error) => print("Failed to delete user: $error"));
     }
   }
