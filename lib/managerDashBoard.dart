@@ -11,34 +11,6 @@ import 'package:item_selector/item_selector.dart';
 
 import 'model/models.dart';
 
-Widget buildListItem(BuildContext context, int index, bool selected) {
-  return Card(
-    margin: EdgeInsets.all(10),
-    elevation: selected ? 2 : 10,
-    child: ListTile(
-      leading: Icon(Icons.insert_drive_file),
-      contentPadding: EdgeInsets.all(10),
-      title: Text('Project ' + index.toString()),
-    ),
-  );
-}
-
-class ListViewPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return ItemSelectionController(
-      child: ListView.builder(
-        itemCount: 50,
-        itemBuilder: (BuildContext context, int index) {
-          return ItemSelectionBuilder(
-            index: index,
-            builder: buildListItem,
-          );
-        },
-      ),
-    );
-  }
-}
 
 class RectSelection extends ItemSelection {
   RectSelection(this.columns);
@@ -84,6 +56,7 @@ class RectSelection extends ItemSelection {
 class ManagerDashboard extends StatefulWidget {
   ManagerDashboard({Key key}) : super(key: key) {
     _getAllEmployees();
+    _getAllProjects();
   }
 
   final List<UserModel> _managers = [];
@@ -91,25 +64,7 @@ class ManagerDashboard extends StatefulWidget {
   final List<UserModel> _employee = [];
   final List<DropdownMenuItem> _employeeDropDownItems = [];
 
-  final List<Map<String, dynamic>> _items = [
-    {
-      'value': 'boxValue',
-      'label': 'Box Label',
-      'icon': Icon(Icons.stop),
-    },
-    {
-      'value': 'circleValue',
-      'label': 'Circle Label',
-      'icon': Icon(Icons.fiber_manual_record),
-      'textStyle': TextStyle(color: Colors.red),
-    },
-    {
-      'value': 'starValue',
-      'label': 'Star Label',
-      'enable': false,
-      'icon': Icon(Icons.grade),
-    }
-  ];
+  final List<ProjectModel> _project = [];
 
   _getAllEmployees() async {
     FirebaseFirestore.instance
@@ -150,6 +105,36 @@ class ManagerDashboard extends StatefulWidget {
         });
   }
 
+  _getAllProjects() async {
+
+    FirebaseFirestore.instance
+        .collection('projects')
+        .get()
+        .then((value) {
+      print("Length of project list " + value.docs.length.toString());
+      ProjectModel projectModel;
+      value.docs.forEach((element) {
+        projectModel = ProjectModel(
+            element.data().containsKey("project_name") ? element["project_name"] : "",
+            element.data().containsKey("start_date") ? element["start_date"] : "",
+            element.data().containsKey("end_date") ? element["end_date"] : "",
+            element.data().containsKey("project_cost") ? element["project_cost"] : "",
+            element.data().containsKey("project_manager") ? element["project_manager"] : "",
+            element.data().containsKey("client") ? element["client"] : "",
+            element.data().containsKey("status") ? element["status"] : ""
+//            element.id);
+
+
+        );
+        _project.add(projectModel);
+
+//        print(projectModel.project_name + " " + projectModel.project_manager + " " + projectModel.status +' project');
+          print(_project[0].project_name);
+          print(_project.length);
+      });
+    });
+  }
+
   @override
   State<StatefulWidget> createState() {
     return new ManagerDashBoardState(
@@ -168,9 +153,11 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
   final TextEditingController taskDescriptionController =
       TextEditingController();
   String _assignedEmployee;
+  final List<ProjectModel> _project;
+
 
   ManagerDashBoardState(
-      this._managerDropDownItems, this._employeeDropDownItems, this._employee);
+      this._managerDropDownItems, this._employeeDropDownItems, this._employee,  this._project);
 
   final key = GlobalKey<FormState>();
 
@@ -358,7 +345,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
 
               ItemSelectionController(
                 child: ListView.builder(
-                  itemCount: 100,
+                  itemCount: _project.length,
                   itemBuilder: (BuildContext context, int index) {
                     return ItemSelectionBuilder(
                       index: index,
@@ -367,10 +354,6 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                   },
                 ),
               ),
-
-//            Center(
-//              child: Text('It\'s sunny here'),
-//            ),
             ],
           ),
         ),
@@ -510,4 +493,17 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
           );
         });
   }
+}
+
+Widget buildListItem(BuildContext context, int index, bool selected) {
+  return Card(
+    margin: EdgeInsets.all(10),
+    elevation: selected ? 2 : 10,
+    child: ListTile(
+      leading: Icon(Icons.insert_drive_file),
+      contentPadding: EdgeInsets.all(10),
+      title: Text('Project ' + index.toString()),
+      subtitle: Text('Status : ' ),
+    ),
+  );
 }
