@@ -138,7 +138,7 @@ class ManagerDashboard extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return new ManagerDashBoardState(
-        _managerDropDownItems, _employeeDropDownItems, _employee);
+        _managerDropDownItems, _employeeDropDownItems, _employee, _project);
   }
 }
 
