@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:horizon_projects/widget/defaultButton.dart';
 import 'package:item_selector/item_selector.dart';
+import 'package:horizon_projects/widget/ProjectCardItem.dart';
 
 import 'model/models.dart';
 
@@ -55,17 +56,22 @@ class RectSelection extends ItemSelection {
 }
 
 class ManagerDashboard extends StatefulWidget {
-  ManagerDashboard({Key key}) : super(key: key) {
+  ManagerDashboard({Key key, this.projectModel, this.animation, this.onClick}) : super(key: key) {
     _getAllEmployees();
     _getAllProjects();
   }
 
+  final superkey = GlobalKey<AnimatedListState>();
   final List<UserModel> _managers = [];
   final List<DropdownMenuItem> _managerDropDownItems = [];
   final List<UserModel> _employee = [];
   final List<DropdownMenuItem> _employeeDropDownItems = [];
-
   final List<ProjectModel> _project = [];
+  final List<ProjectModel> _projects = [];
+
+  final ProjectModel projectModel;
+  final Animation animation;
+  final Function(ProjectModel) onClick;
 
   _getAllEmployees() async {
     FirebaseFirestore.instance
@@ -107,11 +113,24 @@ class ManagerDashboard extends StatefulWidget {
   }
 
   _getAllProjects() async {
+
     FirebaseFirestore.instance.collection('projects').get().then((value) {
       print("Length of project list " + value.docs.length.toString());
+
+      for (var i = 0; i <= _projects.length - 1; i++) {
+        superkey.currentState.removeItem(0,
+                (BuildContext context, Animation<double> animation) {
+              return Container();
+            });
+      }
+      _projects.clear();
+
       ProjectModel projectModel;
       value.docs.forEach((element) {
         projectModel = ProjectModel(
+            element.data().containsKey("pid")
+                ? element["pid"]
+                : "",
             element.data().containsKey("project_name")
                 ? element["project_name"]
                 : "",
@@ -128,14 +147,13 @@ class ManagerDashboard extends StatefulWidget {
             element.data().containsKey("client") ? element["client"] : "",
             element.data().containsKey("status") ? element["status"] : ""
 //            element.id);
-
         );
-        _project.add(projectModel);
 
-//        print(projectModel.project_name + " " + projectModel.project_manager + " " + projectModel.status +' project');
-        print(_project[0].project_name);
-        print(_project.length);
+        _projects.add(projectModel);
+        superkey.currentState.insertItem(_projects.length - 1);
       });
+      print(_projects.length);
+      print(_projects);
     });
   }
 
@@ -143,18 +161,26 @@ class ManagerDashboard extends StatefulWidget {
   State<StatefulWidget> createState() {
     return new ManagerDashBoardState(
         _managerDropDownItems, _employeeDropDownItems, _employee, _project,
-        _managers);
+        _managers, superkey,_projects,projectModel,animation,onClick);
   }
 }
 
 class ManagerDashBoardState extends State<ManagerDashboard> {
+
+  final ProjectModel projectModel;
+  final Animation animation;
+  final Function(ProjectModel) onClick;
+
+  final superkey;
   final List<DropdownMenuItem> _managerDropDownItems;
   final List<DropdownMenuItem> _employeeDropDownItems;
   final List<UserModel> _employee;
   final List<UserModel> _manager;
   List<Widget> _taskItems = [];
   final List<Task> _tasks = [];
+  final List<ProjectModel> _projects;
 
+  final TextEditingController projectStatusController = new TextEditingController();
   final TextEditingController taskTitleController = TextEditingController();
   final TextEditingController projectNameController = TextEditingController();
   final TextEditingController projectCostController = TextEditingController();
@@ -162,6 +188,10 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
   final TextEditingController taskDescriptionController =
   TextEditingController();
 
+  bool isProjectUpdating = false;
+  ProjectModel selectedProjectModel;
+
+  String _assignedPid;
   String _taskStatus = "created";
   String _projectStatus = "created";
   String _assignedEmployee;
@@ -175,7 +205,8 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
   final List<ProjectModel> _project;
 
   ManagerDashBoardState(this._managerDropDownItems, this._employeeDropDownItems,
-      this._employee, this._project, this._manager);
+      this._employee, this._project, this._manager, this.superkey,
+      this._projects, this.projectModel, this.animation, this.onClick);
 
   final key = GlobalKey<FormState>();
   CollectionReference projects =
@@ -307,15 +338,16 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                             },
                             autovalidateMode:
                             AutovalidateMode.onUserInteraction,
-                            onChanged: (val) => {
-                            print(val),
-                            _assignedManager = val,
-                            _manager.forEach((element) {
-                              if (_assignedManager == element.uid) {
-                                _assignedManagerName = element.full_name;
-                              }
-                            })
-                          },
+                            onChanged: (val) =>
+                            {
+                              print(val),
+                              _assignedManager = val,
+                              _manager.forEach((element) {
+                                if (_assignedManager == element.uid) {
+                                  _assignedManagerName = element.full_name;
+                                }
+                              })
+                            },
                             onSaved: (val) => print(val),
                           ),
                           new DropdownButtonFormField(
@@ -371,7 +403,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                             children: _taskItems,
                           ),
                           DefaultButton("Create Project", () {
-                            if(key.currentState.validate()){
+                            if (key.currentState.validate()) {
                               _createProject();
                             }
                           })
@@ -379,15 +411,13 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                       ),
                     ),
                   )),
-              ItemSelectionController(
-                child: ListView.builder(
-                  itemCount: _project.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return ItemSelectionBuilder(
-                      index: index,
-                      builder: buildListItem,
-                    );
-                  },
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: AnimatedList(
+                  key: superkey,
+                  initialItemCount: _projects.length,
+                  itemBuilder: (context, index, animation) =>
+                      buildListItem(_projects[index], index, animation),
                 ),
               ),
             ],
@@ -406,7 +436,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
       'cost': projectCostController.text,
       'manager': _assignedManager,
       'manager_name': _assignedManagerName,
-      'name': projectNameController.text,
+      'project_name': projectNameController.text,
       'status': _projectStatus
     })
         .then((value) =>
@@ -421,10 +451,10 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
       _projectStatus = "created",
       endDate = null,
       startDate = null
-
     })
         .catchError((error) => print("Failed to add user: $error"));
   }
+
 
   _showTaskAddingPopUp() {
     String status = "created";
@@ -535,53 +565,148 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
           );
         });
   }
-}
 
-Widget addTaskItem(Task task) {
-  return Card(
-    clipBehavior: Clip.antiAlias,
-    child: Column(
-      children: [
-        ListTile(
-          title: Text(task.title.toString(),
-              style:
-              TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-          subtitle: Text(
-            "Status : Created",
-            style: TextStyle(color: Colors.black.withOpacity(0.6)),
-          ),
-          tileColor: Colors.deepPurpleAccent[100],
-        ),
-        ListTile(
-          title: Text("Description",
-              style:
-              TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-          subtitle: Text(
-            task.description,
-            style: TextStyle(color: Colors.black.withOpacity(0.8)),
-          ),
-        ),
-        ListTile(
-          title: Text(task.employeeName),
-          subtitle: Text(
-            "EID : " + task.employee,
-            style: TextStyle(color: Colors.black.withOpacity(0.6)),
-          ),
-        )
-      ],
-    ),
-  );
-}
+  _showUpdateDialog(ProjectModel project) {
+    isProjectUpdating = true;
+    selectedProjectModel = project;
 
-Widget buildListItem(BuildContext context, int index, bool selected) {
-  return Card(
-    margin: EdgeInsets.all(10),
-    elevation: selected ? 2 : 10,
-    child: ListTile(
-      leading: Icon(Icons.insert_drive_file),
-      contentPadding: EdgeInsets.all(10),
-      title: Text('Project ' + index.toString()),
-      subtitle: Text('Status : '),
-    ),
-  );
+    _showUpdateProjectPopUp();
+  }
+
+  _showUpdateProjectPopUp() {
+    String status = "created";
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          final key = new GlobalKey<FormState>();
+          return new AlertDialog(
+            content: Form(
+                key: key,
+                child: new Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Text("Update Project Status"),
+                    new DropdownButtonFormField(
+                      items: [
+                        new DropdownMenuItem(
+                          child: Text("Created"),
+                          value: "created",
+                        ),
+                        new DropdownMenuItem(
+                            child: Text("Ongoing"), value: "onGoing"),
+                        new DropdownMenuItem(
+                          child: Text("Finished"),
+                          value: "finished",
+                        ),
+                        new DropdownMenuItem(
+                          child: Text("Cancelled"),
+                          value: "cancelled",
+                        ),
+                        new DropdownMenuItem(
+                          child: Text("On Hold"),
+                          value: "onHold",
+                        ),
+                      ],
+                      onChanged: (val) => { status = val},
+                      hint: Text("Select the status"),
+                      value: "created",
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(15),
+                      child: DefaultButton("Update Project", () {
+                        if (key.currentState.validate()) {
+                          String projectStatus = "";
+
+                          _projects.forEach((element) {
+                            if (_assignedPid == element.pid) {
+                              projectStatus = element.status;
+                              print("aaaaaaaaaaaaaaaaa =======> " + projectStatus);
+                            }
+                          });
+
+//                          ProjectModel project = ProjectModel(
+//                              taskTitleController.text,
+//                              taskDescriptionController.text,
+//                              _assignedEmployee,
+//                              userName,
+//                              status);
+
+                        }
+                      }),
+                    )
+                  ],
+                )),
+            actions: <Widget>[
+              new TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        });
+  }
+
+
+  Widget addTaskItem(Task task) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          ListTile(
+            title: Text(task.title.toString(),
+                style:
+                TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            subtitle: Text(
+              "Status : Created",
+              style: TextStyle(color: Colors.black.withOpacity(0.6)),
+            ),
+            tileColor: Colors.deepPurpleAccent[100],
+          ),
+          ListTile(
+            title: Text("Description",
+                style:
+                TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            subtitle: Text(
+              task.description,
+              style: TextStyle(color: Colors.black.withOpacity(0.8)),
+            ),
+          ),
+          ListTile(
+            title: Text(task.employeeName),
+            subtitle: Text(
+              "EID : " + task.employee,
+              style: TextStyle(color: Colors.black.withOpacity(0.6)),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+//Widget buildListItem(ProjectModel context, int index, Animation<double> animation) {
+//  return Card(
+//    margin: EdgeInsets.all(10),
+//    child: ListTile(
+//      leading: Icon(Icons.insert_drive_file),
+//      contentPadding: EdgeInsets.all(10),
+//      title: Text( 'Name : ' + context.project_name),
+//      subtitle: Text('Status : ' + context.status),
+//      onTap: _textMethod,
+//    ),
+//  );
+//}
+
+  Widget buildListItem(ProjectModel project, int index,
+      Animation<double> animation) {
+    return ProjectCardItem(
+      project: project,
+      animation: animation,
+      onClick: (project) => _showUpdateDialog(project),
+    );
+  }
+
+
 }

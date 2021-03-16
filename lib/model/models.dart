@@ -21,6 +21,7 @@ class Task{
 }
 
 class ProjectModel{
+  final String pid;
   final String project_name;
   final String start_date;
   final String end_date;
@@ -29,6 +30,6 @@ class ProjectModel{
   final String client;
   final String status;
 
-  ProjectModel(this.project_name, this.start_date, this.end_date, this.project_cost, this.project_manager, this.client, this.status);
+  ProjectModel(this.pid, this.project_name, this.start_date, this.end_date, this.project_cost, this.project_manager, this.client, this.status);
 
 }
