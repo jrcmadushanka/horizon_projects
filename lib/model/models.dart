@@ -9,3 +9,11 @@ class UserModel{
 
   UserModel(this.uid, this.full_name, this.admin_id, this.email, this.type, this.password, this.doc);
 }
+
+class Task{
+  final String title;
+  final String description;
+  final String employee;
+
+  Task(this.title, this.description, this.employee);
+}

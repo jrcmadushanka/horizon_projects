@@ -1,7 +1,9 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_field/date_field.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:horizon_projects/widget/defaultButton.dart';
@@ -87,6 +89,7 @@ class ManagerDashboard extends StatefulWidget {
   final List<UserModel> _managers = [];
   final List<DropdownMenuItem> _managerDropDownItems = [];
   final List<UserModel> _employee = [];
+  final List<DropdownMenuItem> _employeeDropDownItems = [];
 
   final List<Map<String, dynamic>> _items = [
     {
@@ -136,6 +139,8 @@ class ManagerDashboard extends StatefulWidget {
                   child: Text(userModel.full_name), value: userModel.uid));
             } else {
               _employee.add(userModel);
+              _employeeDropDownItems.add(new DropdownMenuItem(
+                  child: Text(userModel.full_name), value: userModel.uid));
             }
           });
 
@@ -147,14 +152,25 @@ class ManagerDashboard extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return new ManagerDashBoardState(_managerDropDownItems);
+    return new ManagerDashBoardState(
+        _managerDropDownItems, _employeeDropDownItems, _employee);
   }
 }
 
 class ManagerDashBoardState extends State<ManagerDashboard> {
   final List<DropdownMenuItem> _managerDropDownItems;
+  final List<DropdownMenuItem> _employeeDropDownItems;
+  final List<UserModel> _employee;
+  List<Widget> _taskItems = [];
+  final List<Task> _tasks = [];
 
-  ManagerDashBoardState(this._managerDropDownItems);
+  final TextEditingController taskTitleController = TextEditingController();
+  final TextEditingController taskDescriptionController =
+      TextEditingController();
+  String _assignedEmployee;
+
+  ManagerDashBoardState(
+      this._managerDropDownItems, this._employeeDropDownItems, this._employee);
 
   final key = GlobalKey<FormState>();
 
@@ -305,6 +321,33 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                             hint: Text("Select the status"),
                             value: "created",
                           ),
+                          MaterialButton(
+                              onPressed: () {
+                                _showTaskAddingPopUp();
+                              },
+                              padding: EdgeInsets.only(top: 20, bottom: 10),
+                              child: Container(
+                                padding: EdgeInsets.all(15),
+                                color: Colors.deepPurple[200],
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      "Add a Task",
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 20),
+                                    ),
+                                    Icon(
+                                      Icons.library_add,
+                                      color: Colors.white,
+                                    )
+                                  ],
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                ),
+                              )),
+                          Column(
+                            children: _taskItems,
+                          ),
                           DefaultButton("Create Project", () {
                             key.currentState.validate();
                           })
@@ -333,5 +376,138 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
         ),
       );
     }
+  }
+
+  _showTaskAddingPopUp() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          final key = new GlobalKey<FormState>();
+          return new AlertDialog(
+            content: Form(
+                key: key,
+                child: new Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Text("Enter Task Details"),
+                    TextFormField(
+                      decoration: new InputDecoration(
+                          labelText: "Title", hintText: 'Enter the task title'),
+                      validator: RequiredValidator(errorText: "Required"),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      controller: taskTitleController,
+                    ),
+                    TextFormField(
+                      decoration: new InputDecoration(
+                          labelText: "Description",
+                          hintText: 'Enter task description'),
+                      validator: RequiredValidator(errorText: "Required"),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      controller: taskDescriptionController,
+                    ),
+                    new DropdownButtonFormField(
+                      icon: Icon(Icons.account_circle),
+                      items: _employeeDropDownItems,
+                      hint: Text("Assign an Employee"),
+                      validator: (value) {
+                        if (value == null) {
+                          return "Required";
+                        }
+                        return null;
+                      },
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      onChanged: (val) {
+                        _assignedEmployee = val;
+                      },
+                      onSaved: (val) => print(val),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(15),
+                      child: DefaultButton("Submit Task", () {
+                        if (key.currentState.validate()) {
+                          Task task = Task(
+                              taskTitleController.text,
+                              taskDescriptionController.text,
+                              _assignedEmployee);
+
+                          String userName = "";
+
+                          _employee.forEach((element) {
+                            if (_assignedEmployee == element.uid) {
+                              userName = element.full_name;
+                            }
+                          });
+
+                          _taskItems.add(Padding(
+                              padding: EdgeInsets.all(10),
+                              child: Card(
+                                  elevation: 5,
+                                  child: Padding(
+                                      padding: EdgeInsets.all(20),
+                                      child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Expanded(
+                                                child: Column(children: [
+                                              Padding(
+                                                  padding: EdgeInsets.all(5)),
+                                              Text(
+                                                task.title,
+                                                style: TextStyle(
+                                                    color: Colors.deepPurple,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              Text(task.description,
+                                                  style: TextStyle(
+                                                      color: Colors.grey)),
+                                              Padding(
+                                                  padding: EdgeInsets.all(5)),
+                                            ])),
+                                            Padding(
+                                              padding: EdgeInsets.zero,
+                                            ),
+                                            Column(
+                                              children: [
+                                                Padding(
+                                                    padding: EdgeInsets.all(5)),
+                                                Icon(Icons
+                                                    .emoji_people_outlined),
+                                                Text(
+                                                  userName,
+                                                  style: TextStyle(
+                                                      color: Colors.deepPurple,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Padding(
+                                                    padding: EdgeInsets.all(5)),
+                                              ],
+                                            ),
+                                            Padding(
+                                                padding: EdgeInsets.all(10)),
+                                          ])))));
+                          this.setState(() {
+                            _taskItems = _taskItems;
+                          });
+                        }
+                      }),
+                    )
+                  ],
+                )),
+            actions: <Widget>[
+              new TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        });
   }
 }

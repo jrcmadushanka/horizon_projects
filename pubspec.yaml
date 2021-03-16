@@ -23,6 +23,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
   firebase_core: ^1.0.0
   # Add the dependency for the FlutterFire plugin for Google Analytics
   firebase_analytics: ^5.0.2
@@ -44,8 +45,14 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   font_awesome_flutter: ^8.8.1
+
+  #Used for form validations
   form_field_validator: ^1.0.1
+
+  # Used for user management
   firebase_auth: ^1.0.0
+
+  # Used for store data
   cloud_firestore: "^1.0.0"
 
 dev_dependencies:

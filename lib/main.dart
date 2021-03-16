@@ -7,7 +7,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:horizon_projects/adminDashboard.dart';
-import 'package:horizon_projects/projectList.dart';
 import 'package:horizon_projects/widget/defaultButton.dart';
 
 import 'managerDashBoard.dart';
@@ -75,7 +74,7 @@ class LoginPageState extends State<LoginPage>
           .get()
           .then((QuerySnapshot querySnapshot) => {
                 querySnapshot.docs.forEach((doc) {
-                  setState(() {
+                  //setState(() {
                     if (doc["type"].toString() == "ADMIN") {
                       Navigator.pushReplacement(
                           context,
@@ -87,7 +86,7 @@ class LoginPageState extends State<LoginPage>
                           MaterialPageRoute(
                               builder: (context) => ManagerDashboard()));
                     }
-                  });
+                 // });
                 })
               })
           .onError((error, stackTrace) => {print(stackTrace)});
@@ -102,7 +101,7 @@ class LoginPageState extends State<LoginPage>
     try {
       print("clicked");
       userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _adminEmail == "" ? _emailController.text : _adminEmail,
+          email:  _emailController.text,
           password: passwordController.text);
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context)
@@ -261,7 +260,7 @@ class LoginPageState extends State<LoginPage>
                                 AutovalidateMode.onUserInteraction,
                             validator: MultiValidator([
                               EmailValidator(errorText: "Invalid Email"),
-                              RequiredValidator(errorText: "* Required")
+                              RequiredValidator(errorText: "* Required"),
                             ]),
                           ),
                           visible: _adminEmail == "",
