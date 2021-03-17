@@ -28,6 +28,9 @@ dependencies:
   # Add the dependency for the FlutterFire plugin for Google Analytics
   firebase_analytics: ^5.0.2
 
+  #printing
+  printing: ^5.0.3
+
   #date time picker
   date_field: ^1.0.4
 
