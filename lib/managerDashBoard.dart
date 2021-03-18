@@ -776,16 +776,6 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
 
     const tableHeaders = ['Project Name', 'Reason'];
 
-    const dataTable = [
-      ['Flutter Project 1', 'Reason 1'],
-      ['Flutter Project 2', 'Reason 2' ],
-      ['Flutter Project 3', 'Reason 1' ],
-      ['Flutter Project 4', 'Reason 1' ],
-      ['Flutter Project 5', 'Reason 1' ],
-      ['Flutter Project 6', 'Reason 1' ],
-      ['Flutter Project 7', 'Reason 1' ],
-    ];
-
     pdf.addPage(
       pw.Page(
         pageFormat: format,
