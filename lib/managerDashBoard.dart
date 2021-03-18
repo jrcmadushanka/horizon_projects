@@ -88,22 +88,23 @@ class ManagerDashboard extends StatefulWidget {
           .listen((event) {
         for (var i = 0; i <= _task.length - 1; i++) {
           taskkey.currentState.removeItem(0,
-                  (BuildContext context, Animation<double> animation) {
-                return Container();
-              });
+              (BuildContext context, Animation<double> animation) {
+            return Container();
+          });
         }
         _task.clear();
         event.docs.forEach((element) {
           Task taskModel = Task(
-                        element.data().containsKey("title") ? element["title"] : "",
-            element.data().containsKey("description")
-                ? element["description"]
-                : "",
-            element.data().containsKey("employee") ? element["employee"] : "",
-            element.data().containsKey("employeeName") ? element["employeeName"] : "",
-            element.data().containsKey("status") ? element["status"] : "",
-              element.id
-          );
+              element.data().containsKey("title") ? element["title"] : "",
+              element.data().containsKey("description")
+                  ? element["description"]
+                  : "",
+              element.data().containsKey("employee") ? element["employee"] : "",
+              element.data().containsKey("employeeName")
+                  ? element["employeeName"]
+                  : "",
+              element.data().containsKey("status") ? element["status"] : "",
+              element.id);
           _task.add(taskModel);
 //          taskkey.currentState.insertItem(_task.length - 1);
         });
@@ -118,18 +119,18 @@ class ManagerDashboard extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return new ManagerDashBoardState(
-      _managerDropDownItems,
-      _employeeDropDownItems,
-      _employee,
-      _project,
-      _managers,
-      //   _projects,
-      projectModel,
-      animation,
-      onClick,
-      _task
-      /* _onHoldProjects*/
-    );
+        _managerDropDownItems,
+        _employeeDropDownItems,
+        _employee,
+        _project,
+        _managers,
+        //   _projects,
+        projectModel,
+        animation,
+        onClick,
+        _task
+        /* _onHoldProjects*/
+        );
   }
 }
 
@@ -175,16 +176,15 @@ class ManagerDashBoardState extends State<ManagerDashboard>
   final List<ProjectModel> _project;
 
   ManagerDashBoardState(
-    this._managerDropDownItems,
-    this._employeeDropDownItems,
-    this._employee,
-    this._project,
-    this._manager,
-    this.projectModel,
-    this.animation,
-    this.onClick,
-      this._tasks
-  );
+      this._managerDropDownItems,
+      this._employeeDropDownItems,
+      this._employee,
+      this._project,
+      this._manager,
+      this.projectModel,
+      this.animation,
+      this.onClick,
+      this._tasks);
 
   final key = GlobalKey<FormState>();
   CollectionReference projects =
@@ -204,10 +204,11 @@ class ManagerDashBoardState extends State<ManagerDashboard>
             bottom: TabBar(
               onTap: (value) => {
                 print(value),
-                if(value == 1){
-                  //_getAllProjects()
-                  allProjectListSuperKey.currentState.reassemble()
-                }
+                if (value == 1)
+                  {
+                    //_getAllProjects()
+                    allProjectListSuperKey.currentState.reassemble()
+                  }
               },
               tabs: <Widget>[
                 Tab(
@@ -435,26 +436,21 @@ class ManagerDashBoardState extends State<ManagerDashboard>
           value.docs.forEach((element) {
             projectModel = ProjectModel(
                 element.data().containsKey("pid") ? element["pid"] : "",
-                element.data().containsKey("name")
-                    ? element["name"]
-                    : "",
+                element.data().containsKey("name") ? element["name"] : "",
                 element.data().containsKey("start_date")
                     ? element["start_date"]
                     : "",
                 element.data().containsKey("end_date")
                     ? element["end_date"]
                     : "",
-                element.data().containsKey("cost")
-                    ? element["cost"]
-                    : "",
+                element.data().containsKey("cost") ? element["cost"] : "",
                 element.data().containsKey("manager_name")
                     ? element["manager_name"]
                     : "",
                 element.data().containsKey("client") ? element["client"] : "",
                 element.data().containsKey("status") ? element["status"] : "",
                 element.data().containsKey("manager") ? element["manager"] : "",
-              element.id
-            );
+                element.id);
 
             _onHoldProjects.add(projectModel);
           });
@@ -603,7 +599,8 @@ class ManagerDashBoardState extends State<ManagerDashboard>
                               taskDescriptionController.text,
                               _assignedEmployee,
                               userName,
-                              status, "");
+                              status,
+                              "");
 
                           _taskItems.add(addTaskItem(task));
                           this.setState(() {
