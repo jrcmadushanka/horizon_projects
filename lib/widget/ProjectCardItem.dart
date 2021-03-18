@@ -37,13 +37,13 @@ class ProjectCardItem extends StatelessWidget{
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Text("Project Name : " + project.project_name,
+                            Text("Project Name : " + project.name,
                                 style: TextStyle(
                                     fontSize: 20,
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold)),
                             Padding(padding: EdgeInsets.all(6)),
-                            Text("ID : "+ project.pid,
+                            Text("Project Manager : "+ project.manager_name,
                                 style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.white,
