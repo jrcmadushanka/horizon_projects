@@ -14,6 +14,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
+import 'login.dart';
 import 'model/models.dart';
 
 class ManagerDashboard extends StatefulWidget {
@@ -190,6 +191,8 @@ class ManagerDashBoardState extends State<ManagerDashboard>
   CollectionReference projects =
       FirebaseFirestore.instance.collection('projects');
   CollectionReference tasksRef = FirebaseFirestore.instance.collection('tasks');
+
+  Future<Uint8List> reports;
 
   @override
   Widget build(BuildContext context) {
@@ -399,9 +402,45 @@ class ManagerDashBoardState extends State<ManagerDashboard>
                   )),
               ManageProjects(),
               PdfPreview(
+                useActions: true,
                 build: (format) => _generatePdf(format),
               ),
             ],
+          ),
+          drawer: Drawer(
+            child: Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage("assets/background.jpeg"),
+                    fit: BoxFit.cover,
+                    colorFilter:
+                    new ColorFilter.mode(Colors.black54, BlendMode.hardLight)),
+              ),
+              child: ListView(
+                // Important: Remove any padding from the ListView.
+                padding: EdgeInsets.zero,
+                children: <Widget>[
+                  DrawerHeader(
+                    child: Center(
+                        child: Text( "Welcome to Manager Dashboard",
+                          textScaleFactor: 1.5,
+                          style: new TextStyle(color: Colors.white),
+                        )),
+                    decoration: BoxDecoration(
+                      color: Color.fromARGB(100, 138, 57, 162),
+                    ),
+                  ),
+                  ListTile(
+                    title: Text('logout',
+                        style: new TextStyle(color: Colors.white, fontSize: 19)),
+                    tileColor: Color.fromARGB(100, 192, 65, 182),
+                    onTap: () {
+                      _logout();
+                    },
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       );
@@ -420,11 +459,12 @@ class ManagerDashBoardState extends State<ManagerDashboard>
     FirebaseFirestore.instance
         .collection('projects')
         .where('status', whereIn: ['onHold'])
-        .get()
-        .then((value) {
+        .snapshots()
+        .listen((value) {
           print("Length of project list " + value.docs.length.toString());
 
           for (var i = 0; i <= _onHoldProjects.length - 1; i++) {
+            if(onHoldListSuperKey.currentState != null)
             onHoldListSuperKey.currentState.removeItem(0,
                 (BuildContext context, Animation<double> animation) {
               return Container();
@@ -452,7 +492,10 @@ class ManagerDashBoardState extends State<ManagerDashboard>
                 element.data().containsKey("manager") ? element["manager"] : "",
                 element.id);
 
-            _onHoldProjects.add(projectModel);
+            setState(() {
+              _onHoldProjects.add(projectModel);
+            });
+
           });
           // print(_onHoldProjects.length);
           //  print(_onHoldProjects);
@@ -672,16 +715,6 @@ class ManagerDashBoardState extends State<ManagerDashboard>
     const tableHeaders = ['Project Name', 'Reason'];
     const taskTableHeaders = ['Task Name', 'Employee Name'];
 
-    const taskDataTable = [
-      ['Design the solution', 'Chris'],
-      ['Prepare for implementation', 'Hemsworth'],
-      ['Prepare the test/QA ', 'William'],
-      ['Install the product', 'Benito'],
-      ['Implement distributed', 'Da Vinci'],
-      ['Implement a business system', 'Leonardo'],
-      ['Implement distributed data ', 'Homes'],
-    ];
-
     pdf.addPage(
       pw.Page(
         pageFormat: format,
@@ -808,5 +841,25 @@ class ManagerDashBoardState extends State<ManagerDashboard>
     );
 
     return pdf.save();
+  }
+
+  _logout() {
+    try {
+      FirebaseAuth.instance
+          .signOut()
+          .then((value) => {
+        Navigator.pop(context),
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => LoginPage()))
+      })
+          .onError((error, stackTrace) => {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(new SnackBar(content: Text("Logout Failed")))
+      });
+    } on FirebaseAuthException catch (e) {
+      print(e.code);
+    } catch (e) {
+      print(e);
+    }
   }
 }
