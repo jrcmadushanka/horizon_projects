@@ -11,7 +11,6 @@ class ManageProjects extends StatefulWidget {
   State<StatefulWidget> createState() {
     return ManageProjectsState();
   }
-
 }
 
 class ManageProjectsState extends State<ManageProjects>{
@@ -90,9 +89,6 @@ class ManageProjectsState extends State<ManageProjects>{
   }
 
   _showUpdateDialog(ProjectModel project) {
-   /* isProjectUpdating = true;
-    selectedProjectModel = project;
-*/
     _showUpdateProjectPopUp();
   }
 
@@ -144,17 +140,8 @@ class ManageProjectsState extends State<ManageProjects>{
                           _projects.forEach((element) {
                             if (_assignedPid == element.pid) {
                               projectStatus = element.status;
-                              //  print("aaaaaaaaaaaaaaaaa =======> " + projectStatus);
                             }
                           });
-
-//                          ProjectModel project = ProjectModel(
-//                              taskTitleController.text,
-//                              taskDescriptionController.text,
-//                              _assignedEmployee,
-//                              userName,
-//                              status);
-
                         }
                       }),
                     )

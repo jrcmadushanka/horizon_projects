@@ -11,13 +11,14 @@ class UserModel{
 }
 
 class Task{
+  final String id;
   final String title;
   final String description;
   final String employee;
   final String employeeName;
   final String status;
 
-  Task(this.title, this.description, this.employee, this.employeeName, this.status);
+  Task(this.title, this.description, this.employee, this.employeeName, this.status, this.id);
 }
 
 class ProjectModel{

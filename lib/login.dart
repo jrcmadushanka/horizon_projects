@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
+import 'package:horizon_projects/employeeDashboard.dart';
 import 'package:horizon_projects/widget/defaultButton.dart';
 
 import 'adminDashboard.dart';
@@ -70,6 +71,11 @@ class LoginPageState extends State<LoginPage>
                 context,
                 MaterialPageRoute(
                     builder: (context) => ManagerDashboard()));
+          } else{
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => EmployeeDashBoard()));
           }
           // });
         })
@@ -81,24 +87,6 @@ class LoginPageState extends State<LoginPage>
       print(e);
     }
   }
-
-/*
-  _getItems() async {
-    try {
-      FirebaseFirestore.instance
-          .collection('test')
-          .where('items', arrayContains: "rwffg5")
-          .get()
-          .then((QuerySnapshot querySnapshot) => {
-            print(querySnapshot.docs[0])
-        })
-          .onError((error, stackTrace) => {print(stackTrace)});
-    } on FirebaseAuthException catch (e) {
-      print(e.code);
-    } catch (e) {
-      print(e);
-    }
-  }*/
 
   Future<void> _firebaseLogin() async {
     try {

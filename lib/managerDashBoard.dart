@@ -123,8 +123,8 @@ class ManagerDashBoardState extends State<ManagerDashboard>
   bool isProjectUpdating = false;
   ProjectModel selectedProjectModel;
 
-  String _taskStatus = "created";
-  String _projectStatus = "created";
+  String _taskStatus = "Created";
+  String _projectStatus = "Created";
   String _assignedEmployee;
   String _assignedManager;
   String _assignedManagerName;
@@ -298,26 +298,26 @@ class ManagerDashBoardState extends State<ManagerDashboard>
                             items: [
                               new DropdownMenuItem(
                                 child: Text("Created"),
-                                value: "created",
+                                value: "Created",
                               ),
                               new DropdownMenuItem(
-                                  child: Text("Ongoing"), value: "onGoing"),
+                                  child: Text("Ongoing"), value: "Ongoing"),
                               new DropdownMenuItem(
                                 child: Text("Finished"),
-                                value: "finished",
+                                value: "Finished",
                               ),
                               new DropdownMenuItem(
                                 child: Text("Cancelled"),
-                                value: "cancelled",
+                                value: "Cancelled",
                               ),
                               new DropdownMenuItem(
                                 child: Text("On Hold"),
-                                value: "onHold",
+                                value: "On Hold",
                               ),
                             ],
                             onChanged: (val) => {_projectStatus = val},
                             hint: Text("Select the status"),
-                            value: "created",
+                            value: "Created",
                           ),
                           MaterialButton(
                               onPressed: () {
@@ -523,26 +523,26 @@ class ManagerDashBoardState extends State<ManagerDashboard>
                       items: [
                         new DropdownMenuItem(
                           child: Text("Created"),
-                          value: "created",
+                          value: "Created",
                         ),
                         new DropdownMenuItem(
-                            child: Text("Ongoing"), value: "onGoing"),
+                            child: Text("Ongoing"), value: "Ongoing"),
                         new DropdownMenuItem(
                           child: Text("Finished"),
-                          value: "finished",
+                          value: "Finished",
                         ),
                         new DropdownMenuItem(
                           child: Text("Cancelled"),
-                          value: "cancelled",
+                          value: "Cancelled",
                         ),
                         new DropdownMenuItem(
                           child: Text("On Hold"),
-                          value: "onHold",
+                          value: "On Hold",
                         ),
                       ],
                       onChanged: (val) => {status = val},
                       hint: Text("Select the status"),
-                      value: "created",
+                      value: "Created",
                     ),
                     Padding(
                       padding: EdgeInsets.all(15),
@@ -561,7 +561,7 @@ class ManagerDashBoardState extends State<ManagerDashboard>
                               taskDescriptionController.text,
                               _assignedEmployee,
                               userName,
-                              status);
+                              status, "");
 
                           _taskItems.add(addTaskItem(task));
                           this.setState(() {
