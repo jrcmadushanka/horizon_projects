@@ -201,7 +201,6 @@ class ManagerDashboard extends StatefulWidget {
                 : "",
             element.data().containsKey("client") ? element["client"] : "",
             element.data().containsKey("status") ? element["status"] : ""
-//            element.id);
         );
 
         _projects.add(projectModel);
