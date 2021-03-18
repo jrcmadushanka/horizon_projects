@@ -56,9 +56,8 @@ class Report extends StatelessWidget {
                 : "",
             element.data().containsKey("client") ? element["client"] : "",
             element.data().containsKey("status") ? element["status"] : "",
-            element.data().containsKey("manager") ? element["manager"] : ""
-//            element.id);
-        );
+            element.data().containsKey("manager") ? element["manager"] : "",
+            element.id);
 
         _projects.add(projectModel);
 //        superkey.currentState.insertItem(_projects.length - 1);

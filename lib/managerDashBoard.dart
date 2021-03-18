@@ -412,6 +412,7 @@ class ManagerDashBoardState extends State<ManagerDashboard>
                 element.data().containsKey("client") ? element["client"] : "",
                 element.data().containsKey("status") ? element["status"] : "",
                 element.data().containsKey("manager") ? element["manager"] : "",
+              element.id
             );
 
             _onHoldProjects.add(projectModel);

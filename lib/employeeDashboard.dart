@@ -97,7 +97,7 @@ class EmployeeDashBoardState extends State<EmployeeDashBoard> {
 
   Widget buildItem(Task task, int index, Animation<double> animation) {
     return GestureDetector(
-        onLongPress: () {
+        onTap: () {
           _showUpdateProjectPopUp(task.status, task);
         },
         child: Card(

@@ -26,7 +26,7 @@ class ProjectCardItem extends StatelessWidget{
           // child: SizedBox(
           //   height: 80.0,
           child: Card(
-            color: Colors.pinkAccent,
+            color: Colors.purple[200],
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
               child: Row(
@@ -49,7 +49,7 @@ class ProjectCardItem extends StatelessWidget{
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold)),
                             Padding(padding: EdgeInsets.all(6)),
-                            Text("Status : "+ project.status,
+                            Text("Status : "+ project.status.toUpperCase(),
                                 style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.white,

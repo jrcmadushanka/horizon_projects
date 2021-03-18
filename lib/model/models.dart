@@ -31,7 +31,8 @@ class ProjectModel{
   final String manager;
   final String client;
   final String status;
+  final String id;
 
-  ProjectModel(this.pid, this.name, this.start_date, this.end_date, this.cost, this.manager_name, this.client, this.status, this.manager);
+  ProjectModel(this.pid, this.name, this.start_date, this.end_date, this.cost, this.manager_name, this.client, this.status, this.manager, this.id);
 
 }

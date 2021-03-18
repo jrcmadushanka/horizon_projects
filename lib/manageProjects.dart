@@ -13,9 +13,9 @@ class ManageProjects extends StatefulWidget {
   }
 }
 
-class ManageProjectsState extends State<ManageProjects>{
+class ManageProjectsState extends State<ManageProjects> {
 
-  final allProjectListSuperKey =  GlobalKey<AnimatedListState>();
+  final allProjectListSuperKey = GlobalKey<AnimatedListState>();
   final List<ProjectModel> _projects = [];
 
   var _assignedPid;
@@ -38,14 +38,16 @@ class ManageProjectsState extends State<ManageProjects>{
   }
 
   _getAllProjects() async {
-    FirebaseFirestore.instance.collection('projects').get().then((value) {
+    FirebaseFirestore.instance.collection('projects').snapshots().listen((value) {
       print("Length of project list " + value.docs.length.toString());
 
       for (var i = 0; i <= _projects.length - 1; i++) {
-        allProjectListSuperKey.currentState.removeItem(0,
-                (BuildContext context, Animation<double> animation) {
-              return Container();
-            });
+        if(allProjectListSuperKey.currentState != null) {
+          allProjectListSuperKey.currentState.removeItem(0,
+                  (BuildContext context, Animation<double> animation) {
+                return Container();
+              });
+        }
       }
       _projects.clear();
 
@@ -69,16 +71,19 @@ class ManageProjectsState extends State<ManageProjects>{
             element.data().containsKey("client") ? element["client"] : "",
             element.data().containsKey("status") ? element["status"] : "",
             element.data().containsKey("manager") ? element["manager"] : "",
+            element.id
         );
 
         _projects.add(projectModel);
-        allProjectListSuperKey.currentState.insertItem(_projects.length - 1);
+        if(allProjectListSuperKey.currentState != null) {
+          allProjectListSuperKey.currentState.insertItem(_projects.length - 1);
+        }
       });
     });
   }
 
-  Widget buildListItem(
-      ProjectModel project, int index, Animation<double> animation) {
+  Widget buildListItem(ProjectModel project, int index,
+      Animation<double> animation) {
     print("Index : " + index.toString());
 
     return ProjectCardItem(
@@ -89,11 +94,11 @@ class ManageProjectsState extends State<ManageProjects>{
   }
 
   _showUpdateDialog(ProjectModel project) {
-    _showUpdateProjectPopUp();
+    _showUpdateProjectPopUp(project);
   }
 
-  _showUpdateProjectPopUp() {
-    String status = "created";
+  _showUpdateProjectPopUp(ProjectModel project) {
+    String status = project.status;
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -129,20 +134,12 @@ class ManageProjectsState extends State<ManageProjects>{
                       ],
                       onChanged: (val) => {status = val},
                       hint: Text("Select the status"),
-                      value: "created",
+                      value: status,
                     ),
                     Padding(
                       padding: EdgeInsets.all(15),
                       child: DefaultButton("Update Project", () {
-                        if (key.currentState.validate()) {
-                          String projectStatus = "";
-
-                          _projects.forEach((element) {
-                            if (_assignedPid == element.pid) {
-                              projectStatus = element.status;
-                            }
-                          });
-                        }
+                        _updateStatus(project, status);
                       }),
                     )
                   ],
@@ -157,6 +154,20 @@ class ManageProjectsState extends State<ManageProjects>{
             ],
           );
         });
+  }
+
+  _updateStatus(ProjectModel project, String status) async {
+    await FirebaseFirestore.instance
+        .collection("projects")
+        .doc(project.id)
+        .update({'status': status})
+        .then((value) =>
+    {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Project updated"))),
+      Navigator.of(context, rootNavigator: true).pop(),
+    })
+        .catchError((error) => print("Failed to update user: $error"));
   }
 
 }
