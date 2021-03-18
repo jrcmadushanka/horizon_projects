@@ -93,7 +93,6 @@ class AddNewUserDialogState extends State<AddNewUserDialog> {
                   onChanged: _isEdit
                       ? (value) => {
                             this.setState(() {
-                              _showAdminFields = value == "ADMIN";
                               onTypeSelect(value);
                             })
                           }
@@ -103,22 +102,6 @@ class AddNewUserDialogState extends State<AddNewUserDialog> {
                   hint: Text("Select the user type"),
 
                 ),
-                if (_showAdminFields)
-                  new TextFormField(
-                    decoration: new InputDecoration(
-                        labelText: "Admin ID", fillColor: Colors.white),
-                    obscureText: true,
-                    controller: adminIdController,
-                    autovalidateMode: AutovalidateMode.always,
-                    validator: MultiValidator([
-                      RequiredValidator(errorText: "* Required"),
-                      MinLengthValidator(4,
-                          errorText: "ID should be atleast 4 characters"),
-                      MaxLengthValidator(15,
-                          errorText:
-                              "ID should not be greater than 15 characters")
-                    ]),
-                  ),
                 new TextFormField(
                   enabled: _isEdit,
                   decoration: new InputDecoration(
