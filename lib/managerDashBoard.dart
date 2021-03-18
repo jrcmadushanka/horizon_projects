@@ -44,10 +44,8 @@ class RectSelection extends ItemSelection {
     }
 
     // apply selection changes
-    addAll(ItemSelection.copy(newSelection)
-      ..removeAll(oldSelection));
-    removeAll(ItemSelection.copy(oldSelection)
-      ..removeAll(newSelection));
+    addAll(ItemSelection.copy(newSelection)..removeAll(oldSelection));
+    removeAll(ItemSelection.copy(oldSelection)..removeAll(newSelection));
 
     oldSelection = newSelection;
     return true;
@@ -73,37 +71,37 @@ class ManagerDashboard extends StatefulWidget {
         .where('type', whereIn: ['MANAGER', 'EMPLOYER'])
         .get()
         .then((value) {
-      print(value.docs.length.toString());
-      UserModel userModel;
-      value.docs.forEach((element) {
-        userModel = UserModel(
-            element.data().containsKey("uid") ? element["uid"] : "",
-            element.data().containsKey("full_name")
-                ? element["full_name"]
-                : "",
-            element.data().containsKey("admin_id")
-                ? element["admin_id"]
-                : "",
-            element.data().containsKey("email") ? element["email"] : "",
-            element.data().containsKey("type") ? element["type"] : "",
-            "",
-            element.id);
+          print(value.docs.length.toString());
+          UserModel userModel;
+          value.docs.forEach((element) {
+            userModel = UserModel(
+                element.data().containsKey("uid") ? element["uid"] : "",
+                element.data().containsKey("full_name")
+                    ? element["full_name"]
+                    : "",
+                element.data().containsKey("admin_id")
+                    ? element["admin_id"]
+                    : "",
+                element.data().containsKey("email") ? element["email"] : "",
+                element.data().containsKey("type") ? element["type"] : "",
+                "",
+                element.id);
 
-        if (userModel.type == "MANAGER") {
-          _managers.add(userModel);
-          _managerDropDownItems.add(new DropdownMenuItem(
-              child: Text(userModel.full_name), value: userModel.uid));
-        } else {
-          _employee.add(userModel);
-          _employeeDropDownItems.add(new DropdownMenuItem(
-              child: Text(userModel.full_name), value: userModel.uid));
-        }
-      });
+            if (userModel.type == "MANAGER") {
+              _managers.add(userModel);
+              _managerDropDownItems.add(new DropdownMenuItem(
+                  child: Text(userModel.full_name), value: userModel.uid));
+            } else {
+              _employee.add(userModel);
+              _employeeDropDownItems.add(new DropdownMenuItem(
+                  child: Text(userModel.full_name), value: userModel.uid));
+            }
+          });
 
-      print(_employee.length.toString() +
-          " Man =>  " +
-          _managers.length.toString());
-    });
+          print(_employee.length.toString() +
+              " Man =>  " +
+              _managers.length.toString());
+        });
   }
 
   _getAllProjects() async {
@@ -129,7 +127,7 @@ class ManagerDashboard extends StatefulWidget {
             element.data().containsKey("status") ? element["status"] : ""
 //            element.id);
 
-        );
+            );
         _project.add(projectModel);
 
 //        print(projectModel.project_name + " " + projectModel.project_manager + " " + projectModel.status +' project');
@@ -141,9 +139,8 @@ class ManagerDashboard extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return new ManagerDashBoardState(
-        _managerDropDownItems, _employeeDropDownItems, _employee, _project,
-        _managers);
+    return new ManagerDashBoardState(_managerDropDownItems,
+        _employeeDropDownItems, _employee, _project, _managers);
   }
 }
 
@@ -160,7 +157,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
   final TextEditingController projectCostController = TextEditingController();
   final TextEditingController clientController = TextEditingController();
   final TextEditingController taskDescriptionController =
-  TextEditingController();
+      TextEditingController();
 
   String _taskStatus = "created";
   String _projectStatus = "created";
@@ -179,7 +176,8 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
 
   final key = GlobalKey<FormState>();
   CollectionReference projects =
-  FirebaseFirestore.instance.collection('projects');
+      FirebaseFirestore.instance.collection('projects');
+  CollectionReference tasksRef = FirebaseFirestore.instance.collection('tasks');
 
   @override
   Widget build(BuildContext context) {
@@ -221,7 +219,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                             keyboardType: TextInputType.emailAddress,
                             validator: RequiredValidator(errorText: "Required"),
                             autovalidateMode:
-                            AutovalidateMode.onUserInteraction,
+                                AutovalidateMode.onUserInteraction,
                             controller: projectNameController,
                           ),
                           new Padding(
@@ -236,14 +234,12 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                               labelText: 'Start Date',
                             ),
                             autovalidateMode:
-                            AutovalidateMode.onUserInteraction,
+                                AutovalidateMode.onUserInteraction,
                             validator: (DateTime dateTime) {
                               if (dateTime == null) {
                                 return "Date Time Required";
                               } else if (dateTime.millisecondsSinceEpoch <
-                                  DateTime
-                                      .now()
-                                      .millisecondsSinceEpoch) {
+                                  DateTime.now().millisecondsSinceEpoch) {
                                 return "Date must be in future";
                               }
                               return null;
@@ -263,14 +259,12 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                               labelText: 'End Date',
                             ),
                             autovalidateMode:
-                            AutovalidateMode.onUserInteraction,
+                                AutovalidateMode.onUserInteraction,
                             validator: (DateTime dateTime) {
                               if (dateTime == null) {
                                 return "Date Time Required";
                               } else if (dateTime.millisecondsSinceEpoch <
-                                  DateTime
-                                      .now()
-                                      .millisecondsSinceEpoch) {
+                                  DateTime.now().millisecondsSinceEpoch) {
                                 return "Date must be in future";
                               }
                               return null;
@@ -284,7 +278,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                                 labelText: "Project Cost", hintText: 'Rs.'),
                             validator: RequiredValidator(errorText: "Required"),
                             autovalidateMode:
-                            AutovalidateMode.onUserInteraction,
+                                AutovalidateMode.onUserInteraction,
                             controller: projectCostController,
                           ),
                           new TextFormField(
@@ -292,7 +286,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                                 labelText: "Client", hintText: 'Client name'),
                             validator: RequiredValidator(errorText: "Required"),
                             autovalidateMode:
-                            AutovalidateMode.onUserInteraction,
+                                AutovalidateMode.onUserInteraction,
                             controller: clientController,
                           ),
                           new DropdownButtonFormField(
@@ -306,16 +300,16 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                               return null;
                             },
                             autovalidateMode:
-                            AutovalidateMode.onUserInteraction,
+                                AutovalidateMode.onUserInteraction,
                             onChanged: (val) => {
-                            print(val),
-                            _assignedManager = val,
-                            _manager.forEach((element) {
-                              if (_assignedManager == element.uid) {
-                                _assignedManagerName = element.full_name;
-                              }
-                            })
-                          },
+                              print(val),
+                              _assignedManager = val,
+                              _manager.forEach((element) {
+                                if (_assignedManager == element.uid) {
+                                  _assignedManagerName = element.full_name;
+                                }
+                              })
+                            },
                             onSaved: (val) => print(val),
                           ),
                           new DropdownButtonFormField(
@@ -339,7 +333,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                                 value: "onHold",
                               ),
                             ],
-                            onChanged: (val) => { _projectStatus = val},
+                            onChanged: (val) => {_projectStatus = val},
                             hint: Text("Select the status"),
                             value: "created",
                           ),
@@ -364,14 +358,14 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                                     )
                                   ],
                                   mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                                      MainAxisAlignment.spaceBetween,
                                 ),
                               )),
                           Column(
                             children: _taskItems,
                           ),
                           DefaultButton("Create Project", () {
-                            if(key.currentState.validate()){
+                            if (key.currentState.validate()) {
                               _createProject();
                             }
                           })
@@ -398,8 +392,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
   }
 
   _createProject() {
-    projects
-        .add({
+    projects.add({
       'client': clientController.text,
       'end_date': endDate.millisecondsSinceEpoch,
       'start_date': startDate.millisecondsSinceEpoch,
@@ -408,23 +401,49 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
       'manager_name': _assignedManagerName,
       'name': projectNameController.text,
       'status': _projectStatus
-    })
-        .then((value) =>
-    {
-      print("User Added"),
-      print(value.id),
-      clientController.text = "",
-      projectCostController.text = "",
-      projectNameController.text = "",
-      _assignedManager = "",
-      _assignedManagerName = "",
-      _projectStatus = "created",
-      endDate = null,
-      startDate = null
+    }).then((value) {
+      print("User Added");
+      print(value.id);
+      clientController.clear();
+      projectNameController.clear();
+      _assignedManager = "";
+      _assignedManagerName = "";
+      _projectStatus = "created";
+      endDate = null;
+      startDate = null;
+      key.currentState.reset();
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Successfully created the project..")));
 
-    })
-        .catchError((error) => print("Failed to add user: $error"));
+      _tasks.forEach((task) async {
+        await tasksRef.add({
+          'project_id': value.id,
+          'title': task.title,
+          'description': task.description,
+          'employee': task.employee,
+          'employeeName': task.employeeName,
+          'status': task.status
+        });
+      });
+
+      _reset();
+
+      setState(() {
+        _tasks.clear();
+      });
+    }).catchError((error) => print("Failed to add user: $error"));
   }
+
+  void _reset() {
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        transitionDuration: Duration.zero,
+        pageBuilder: (_, __, ___) => ManagerDashboard(),
+      ),
+    );
+  }
+
 
   _showTaskAddingPopUp() {
     String status = "created";
@@ -492,7 +511,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                           value: "onHold",
                         ),
                       ],
-                      onChanged: (val) => { status = val},
+                      onChanged: (val) => {status = val},
                       hint: Text("Select the status"),
                       value: "created",
                     ),
@@ -519,6 +538,11 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                           this.setState(() {
                             _taskItems = _taskItems;
                           });
+                          _tasks.add(task);
+                          taskTitleController.clear();
+                          taskDescriptionController.clear();
+                          key.currentState.reset();
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Task added"),));
                         }
                       }),
                     )
@@ -545,7 +569,7 @@ Widget addTaskItem(Task task) {
         ListTile(
           title: Text(task.title.toString(),
               style:
-              TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
           subtitle: Text(
             "Status : Created",
             style: TextStyle(color: Colors.black.withOpacity(0.6)),
@@ -555,7 +579,7 @@ Widget addTaskItem(Task task) {
         ListTile(
           title: Text("Description",
               style:
-              TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
           subtitle: Text(
             task.description,
             style: TextStyle(color: Colors.black.withOpacity(0.8)),
