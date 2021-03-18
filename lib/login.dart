@@ -40,7 +40,7 @@ class LoginPageState extends State<LoginPage>
         print('User is currently signed out!');
       } else {
         _getUser();
-        _getItems();
+      //  _getItems();
       }
     });
   }
@@ -82,7 +82,7 @@ class LoginPageState extends State<LoginPage>
     }
   }
 
-
+/*
   _getItems() async {
     try {
       FirebaseFirestore.instance
@@ -98,7 +98,7 @@ class LoginPageState extends State<LoginPage>
     } catch (e) {
       print(e);
     }
-  }
+  }*/
 
   Future<void> _firebaseLogin() async {
     try {

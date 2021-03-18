@@ -23,8 +23,8 @@ class Task{
 class ProjectModel{
   final String pid;
   final String project_name;
-  final String start_date;
-  final String end_date;
+  final int start_date;
+  final int end_date;
   final String project_cost;
   final String project_manager;
   final String client;
