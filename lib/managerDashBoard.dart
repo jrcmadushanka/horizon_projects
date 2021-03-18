@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_field/date_field.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
@@ -21,6 +22,7 @@ class ManagerDashboard extends StatefulWidget {
     _getAllEmployees();
     //  _getAllProjects();
     // _getOnHoldProjects();
+    _getAllTasks();
   }
 
 //  final superkey = GlobalKey<AnimatedListState>();
@@ -29,6 +31,8 @@ class ManagerDashboard extends StatefulWidget {
   final List<UserModel> _employee = [];
   final List<DropdownMenuItem> _employeeDropDownItems = [];
   final List<ProjectModel> _project = [];
+  final List<Task> _task = [];
+  final taskkey = GlobalKey<AnimatedListState>();
 
 //  final List<ProjectModel> _projects = [];
   final List<ProjectModel> _onHoldProjects = [];
@@ -76,6 +80,41 @@ class ManagerDashboard extends StatefulWidget {
         });
   }
 
+  _getAllTasks() async {
+    try {
+      FirebaseFirestore.instance
+          .collection('tasks')
+          .snapshots()
+          .listen((event) {
+        for (var i = 0; i <= _task.length - 1; i++) {
+          taskkey.currentState.removeItem(0,
+                  (BuildContext context, Animation<double> animation) {
+                return Container();
+              });
+        }
+        _task.clear();
+        event.docs.forEach((element) {
+          Task taskModel = Task(
+                        element.data().containsKey("title") ? element["title"] : "",
+            element.data().containsKey("description")
+                ? element["description"]
+                : "",
+            element.data().containsKey("employee") ? element["employee"] : "",
+            element.data().containsKey("employeeName") ? element["employeeName"] : "",
+            element.data().containsKey("status") ? element["status"] : "",
+              element.id
+          );
+          _task.add(taskModel);
+//          taskkey.currentState.insertItem(_task.length - 1);
+        });
+      });
+    } on FirebaseAuthException catch (e) {
+      print(e.code);
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   State<StatefulWidget> createState() {
     return new ManagerDashBoardState(
@@ -88,6 +127,7 @@ class ManagerDashboard extends StatefulWidget {
       projectModel,
       animation,
       onClick,
+      _task
       /* _onHoldProjects*/
     );
   }
@@ -107,7 +147,7 @@ class ManagerDashBoardState extends State<ManagerDashboard>
   final List<UserModel> _employee;
   final List<UserModel> _manager;
   List<Widget> _taskItems = [];
-  final List<Task> _tasks = [];
+  final List<Task> _tasks;
   final List<ProjectModel> _projects = [];
   final List<ProjectModel> _onHoldProjects = [];
 
@@ -142,7 +182,8 @@ class ManagerDashBoardState extends State<ManagerDashboard>
     this._manager,
     this.projectModel,
     this.animation,
-    this.onClick
+    this.onClick,
+      this._tasks
   );
 
   final key = GlobalKey<FormState>();
@@ -394,8 +435,8 @@ class ManagerDashBoardState extends State<ManagerDashboard>
           value.docs.forEach((element) {
             projectModel = ProjectModel(
                 element.data().containsKey("pid") ? element["pid"] : "",
-                element.data().containsKey("project_name")
-                    ? element["project_name"]
+                element.data().containsKey("name")
+                    ? element["name"]
                     : "",
                 element.data().containsKey("start_date")
                     ? element["start_date"]
@@ -716,10 +757,10 @@ class ManagerDashBoardState extends State<ManagerDashboard>
             border: null,
             headers: taskTableHeaders,
             data: List<List<dynamic>>.generate(
-              taskDataTable.length,
+              _tasks.length,
               (index) => <dynamic>[
-                taskDataTable[index][0],
-                taskDataTable[index][1],
+                _tasks[index].description,
+                _tasks[index].employeeName,
               ],
             ),
             headerHeight: 5,
