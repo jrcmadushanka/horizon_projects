@@ -54,21 +54,23 @@ class ManageProjectsState extends State<ManageProjects>{
       value.docs.forEach((element) {
         projectModel = ProjectModel(
             element.data().containsKey("pid") ? element["pid"] : "",
-            element.data().containsKey("project_name")
-                ? element["project_name"]
+            element.data().containsKey("name")
+                ? element["name"]
                 : "",
             element.data().containsKey("start_date")
                 ? element["start_date"]
                 : "",
             element.data().containsKey("end_date") ? element["end_date"] : "",
-            element.data().containsKey("project_cost")
-                ? element["project_cost"]
+            element.data().containsKey("cost")
+                ? element["cost"]
                 : "",
-            element.data().containsKey("project_manager")
-                ? element["project_manager"]
+            element.data().containsKey("manager_name")
+                ? element["manager_name"]
                 : "",
             element.data().containsKey("client") ? element["client"] : "",
-            element.data().containsKey("status") ? element["status"] : "");
+            element.data().containsKey("status") ? element["status"] : "",
+            element.data().containsKey("manager") ? element["manager"] : "",
+        );
 
         _projects.add(projectModel);
         allProjectListSuperKey.currentState.insertItem(_projects.length - 1);

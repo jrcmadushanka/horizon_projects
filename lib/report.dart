@@ -48,14 +48,15 @@ class Report extends StatelessWidget {
                 ? element["start_date"]
                 : "",
             element.data().containsKey("end_date") ? element["end_date"] : "",
-            element.data().containsKey("project_cost")
-                ? element["project_cost"]
+            element.data().containsKey("cost")
+                ? element["cost"]
                 : "",
-            element.data().containsKey("project_manager")
-                ? element["project_manager"]
+            element.data().containsKey("manager_name")
+                ? element["manager_name"]
                 : "",
             element.data().containsKey("client") ? element["client"] : "",
-            element.data().containsKey("status") ? element["status"] : ""
+            element.data().containsKey("status") ? element["status"] : "",
+            element.data().containsKey("manager") ? element["manager"] : ""
 //            element.id);
         );
 

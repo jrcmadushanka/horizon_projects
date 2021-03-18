@@ -25,11 +25,12 @@ class ProjectModel{
   final String name;
   final int start_date;
   final int end_date;
-  final String project_cost;
+  final String cost;
   final String manager_name;
+  final String manager;
   final String client;
   final String status;
 
-  ProjectModel(this.pid, this.name, this.start_date, this.end_date, this.project_cost, this.manager_name, this.client, this.status);
+  ProjectModel(this.pid, this.name, this.start_date, this.end_date, this.cost, this.manager_name, this.client, this.status, this.manager);
 
 }

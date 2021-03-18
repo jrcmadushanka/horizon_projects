@@ -54,6 +54,18 @@ class ProjectCardItem extends StatelessWidget{
                                     fontSize: 14,
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold)),
+                            Padding(padding: EdgeInsets.all(6)),
+                            Text("Cost : "+ project.cost,
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
+                            Padding(padding: EdgeInsets.all(6)),
+                            Text("Client : "+ project.client,
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold))
                           ],
                         )),
                   ]

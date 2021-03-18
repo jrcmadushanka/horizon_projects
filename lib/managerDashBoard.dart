@@ -403,14 +403,16 @@ class ManagerDashBoardState extends State<ManagerDashboard>
                 element.data().containsKey("end_date")
                     ? element["end_date"]
                     : "",
-                element.data().containsKey("project_cost")
-                    ? element["project_cost"]
+                element.data().containsKey("cost")
+                    ? element["cost"]
                     : "",
-                element.data().containsKey("project_manager")
-                    ? element["project_manager"]
+                element.data().containsKey("manager_name")
+                    ? element["manager_name"]
                     : "",
                 element.data().containsKey("client") ? element["client"] : "",
-                element.data().containsKey("status") ? element["status"] : "");
+                element.data().containsKey("status") ? element["status"] : "",
+                element.data().containsKey("manager") ? element["manager"] : "",
+            );
 
             _onHoldProjects.add(projectModel);
           });
@@ -652,7 +654,7 @@ class ManagerDashBoardState extends State<ManagerDashboard>
             data: List<List<dynamic>>.generate(
               _onHoldProjects.length,
               (index) => <dynamic>[
-                _onHoldProjects[index].project_name,
+                _onHoldProjects[index].name,
                 _onHoldProjects[index].status,
               ],
             ),
