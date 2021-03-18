@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:ui';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_field/date_field.dart';
@@ -9,6 +10,9 @@ import 'package:form_field_validator/form_field_validator.dart';
 import 'package:horizon_projects/widget/defaultButton.dart';
 import 'package:item_selector/item_selector.dart';
 import 'package:horizon_projects/widget/ProjectCardItem.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
 
 import 'model/models.dart';
 
@@ -59,6 +63,7 @@ class ManagerDashboard extends StatefulWidget {
   ManagerDashboard({Key key, this.projectModel, this.animation, this.onClick}) : super(key: key) {
     _getAllEmployees();
     _getAllProjects();
+    _getOnHoldProjects();
   }
 
   final superkey = GlobalKey<AnimatedListState>();
@@ -68,6 +73,7 @@ class ManagerDashboard extends StatefulWidget {
   final List<DropdownMenuItem> _employeeDropDownItems = [];
   final List<ProjectModel> _project = [];
   final List<ProjectModel> _projects = [];
+  final List<ProjectModel> _onHoldProjects = [];
 
   final ProjectModel projectModel;
   final Animation animation;
@@ -109,6 +115,55 @@ class ManagerDashboard extends StatefulWidget {
       print(_employee.length.toString() +
           " Man =>  " +
           _managers.length.toString());
+    });
+  }
+
+  _getOnHoldProjects() async {
+
+    FirebaseFirestore.instance
+        .collection('projects')
+        .where('status', whereIn: ['onHold'])
+        .get()
+        .then((value) {
+      print("Length of project list " + value.docs.length.toString());
+
+      for (var i = 0; i <= _onHoldProjects.length - 1; i++) {
+        superkey.currentState.removeItem(0,
+                (BuildContext context, Animation<double> animation) {
+              return Container();
+            });
+      }
+      _onHoldProjects.clear();
+
+      ProjectModel projectModel;
+      value.docs.forEach((element) {
+        projectModel = ProjectModel(
+            element.data().containsKey("pid")
+                ? element["pid"]
+                : "",
+            element.data().containsKey("project_name")
+                ? element["project_name"]
+                : "",
+            element.data().containsKey("start_date")
+                ? element["start_date"]
+                : "",
+            element.data().containsKey("end_date") ? element["end_date"] : "",
+            element.data().containsKey("project_cost")
+                ? element["project_cost"]
+                : "",
+            element.data().containsKey("project_manager")
+                ? element["project_manager"]
+                : "",
+            element.data().containsKey("client") ? element["client"] : "",
+            element.data().containsKey("status") ? element["status"] : ""
+//            element.id);
+        );
+
+        _onHoldProjects.add(projectModel);
+//        superkey.currentState.insertItem(_onHoldProjects.length - 1);
+      });
+      print(_onHoldProjects.length);
+      print(_onHoldProjects);
     });
   }
 
@@ -161,7 +216,7 @@ class ManagerDashboard extends StatefulWidget {
   State<StatefulWidget> createState() {
     return new ManagerDashBoardState(
         _managerDropDownItems, _employeeDropDownItems, _employee, _project,
-        _managers, superkey,_projects,projectModel,animation,onClick);
+        _managers, superkey,_projects,projectModel,animation,onClick,_onHoldProjects);
   }
 }
 
@@ -179,6 +234,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
   List<Widget> _taskItems = [];
   final List<Task> _tasks = [];
   final List<ProjectModel> _projects;
+  final List<ProjectModel> _onHoldProjects;
 
   final TextEditingController projectStatusController = new TextEditingController();
   final TextEditingController taskTitleController = TextEditingController();
@@ -206,7 +262,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
 
   ManagerDashBoardState(this._managerDropDownItems, this._employeeDropDownItems,
       this._employee, this._project, this._manager, this.superkey,
-      this._projects, this.projectModel, this.animation, this.onClick);
+      this._projects, this.projectModel, this.animation, this.onClick, this._onHoldProjects);
 
   final key = GlobalKey<FormState>();
   CollectionReference projects =
@@ -217,7 +273,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
     {
       return DefaultTabController(
         initialIndex: 1,
-        length: 2,
+        length: 3,
         child: Scaffold(
           appBar: AppBar(
             backgroundColor: Color.fromARGB(100, 212, 56, 255),
@@ -231,6 +287,10 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                 Tab(
                   text: 'Project List',
                   icon: Icon(Icons.line_style),
+                ),
+                Tab(
+                  text: 'Project Report',
+                  icon: Icon(Icons.print),
                 ),
               ],
             ),
@@ -420,6 +480,9 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                       buildListItem(_projects[index], index, animation),
                 ),
               ),
+              PdfPreview(
+                  build: (format) => _generatePdf(format),
+                ),
             ],
           ),
         ),
@@ -707,6 +770,84 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
       onClick: (project) => _showUpdateDialog(project),
     );
   }
+  
+  Future<Uint8List> _generatePdf(PdfPageFormat format) async {
+    final pdf = pw.Document();
 
+    const tableHeaders = ['Project Name', 'Reason'];
+
+    const dataTable = [
+      ['Flutter Project 1', 'Reason 1'],
+      ['Flutter Project 2', 'Reason 2' ],
+      ['Flutter Project 3', 'Reason 1' ],
+      ['Flutter Project 4', 'Reason 1' ],
+      ['Flutter Project 5', 'Reason 1' ],
+      ['Flutter Project 6', 'Reason 1' ],
+      ['Flutter Project 7', 'Reason 1' ],
+    ];
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: format,
+        build: (context) {
+
+          // Data table
+          final table = pw.Table.fromTextArray(
+            border: null,
+            headers: tableHeaders,
+            data: List<List<dynamic>>.generate(
+              _onHoldProjects.length,
+                  (index) => <dynamic>[
+                    _onHoldProjects[index].project_name,
+                    _onHoldProjects[index].status,
+              ],
+            ),
+            headerHeight: 5,
+            headerStyle: pw.TextStyle(
+              color: PdfColors.red400,
+              fontSize: 25,
+              fontWeight: pw.FontWeight.bold,
+            ),
+            headerDecoration: pw.BoxDecoration(
+            ),
+            rowDecoration: pw.BoxDecoration(
+              border: pw.Border(
+                bottom: pw.BorderSide(
+                  width: .5,
+                ),
+              ),
+            ),
+            cellAlignment: pw.Alignment.centerLeft,
+            cellAlignments: {0: pw.Alignment.centerLeft},
+          );
+
+          // Page layout
+          return pw.Column(
+            children: [
+              pw.Text('On Hold Projects Report',
+                  style: pw.TextStyle(
+                    fontSize: 40,
+                  )),
+              pw.Divider(thickness: 4),
+              pw.Expanded(
+                flex: 2,
+                child: pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.SizedBox(width: 10),
+                    pw.Expanded(child: table),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 20),
+
+            ],
+          );
+        },
+      ),
+    );
+
+    return pdf.save();
+  }
 
 }
