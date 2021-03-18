@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_field/date_field.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
@@ -64,9 +65,11 @@ class ManagerDashboard extends StatefulWidget {
     _getAllEmployees();
     _getAllProjects();
     _getOnHoldProjects();
+    _getAllTasks();
   }
 
   final superkey = GlobalKey<AnimatedListState>();
+  final taskkey = GlobalKey<AnimatedListState>();
   final List<UserModel> _managers = [];
   final List<DropdownMenuItem> _managerDropDownItems = [];
   final List<UserModel> _employee = [];
@@ -74,6 +77,7 @@ class ManagerDashboard extends StatefulWidget {
   final List<ProjectModel> _project = [];
   final List<ProjectModel> _projects = [];
   final List<ProjectModel> _onHoldProjects = [];
+  final List<Task> _task = [];
 
   final ProjectModel projectModel;
   final Animation animation;
@@ -116,6 +120,40 @@ class ManagerDashboard extends StatefulWidget {
           " Man =>  " +
           _managers.length.toString());
     });
+  }
+
+  _getAllTasks() async {
+    try {
+      FirebaseFirestore.instance
+          .collection('tasks')
+          .snapshots()
+          .listen((event) {
+        for (var i = 0; i <= _task.length - 1; i++) {
+          taskkey.currentState.removeItem(0,
+                  (BuildContext context, Animation<double> animation) {
+                return Container();
+              });
+        }
+        _task.clear();
+        event.docs.forEach((element) {
+          Task taskModel = Task(
+              element.data().containsKey("title") ? element["title"] : "",
+              element.data().containsKey("description")
+                  ? element["description"]
+                  : "",
+              element.data().containsKey("employee") ? element["employee"] : "",
+              element.data().containsKey("employeeName") ? element["employeeName"] : "",
+              element.data().containsKey("status") ? element["status"] : "",
+              );
+          _task.add(taskModel);
+//          taskkey.currentState.insertItem(_task.length - 1);
+        });
+      });
+    } on FirebaseAuthException catch (e) {
+      print(e.code);
+    } catch (e) {
+      print(e);
+    }
   }
 
   _getOnHoldProjects() async {
@@ -216,7 +254,7 @@ class ManagerDashboard extends StatefulWidget {
   State<StatefulWidget> createState() {
     return new ManagerDashBoardState(
         _managerDropDownItems, _employeeDropDownItems, _employee, _project,
-        _managers, superkey,_projects,projectModel,animation,onClick,_onHoldProjects);
+        _managers, superkey,_projects,projectModel,animation,onClick,_onHoldProjects, _task);
   }
 }
 
@@ -232,9 +270,10 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
   final List<UserModel> _employee;
   final List<UserModel> _manager;
   List<Widget> _taskItems = [];
-  final List<Task> _tasks = [];
+//  final List<Task> _tasks = [];
   final List<ProjectModel> _projects;
   final List<ProjectModel> _onHoldProjects;
+  final List<Task> _tasks;
 
   final TextEditingController projectStatusController = new TextEditingController();
   final TextEditingController taskTitleController = TextEditingController();
@@ -262,7 +301,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
 
   ManagerDashBoardState(this._managerDropDownItems, this._employeeDropDownItems,
       this._employee, this._project, this._manager, this.superkey,
-      this._projects, this.projectModel, this.animation, this.onClick, this._onHoldProjects);
+      this._projects, this.projectModel, this.animation, this.onClick, this._onHoldProjects, this._tasks);
 
   final key = GlobalKey<FormState>();
   CollectionReference projects =
@@ -863,10 +902,10 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
             border: null,
             headers: taskTableHeaders,
             data: List<List<dynamic>>.generate(
-              taskDataTable.length,
+              _tasks.length,
                   (index) => <dynamic>[
-                    taskDataTable[index][0],
-                    taskDataTable[index][1],
+                    _tasks[index].description,
+                    _tasks[index].employeeName,
               ],
             ),
             headerHeight: 5,
