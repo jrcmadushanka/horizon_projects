@@ -22,14 +22,14 @@ class Task{
 
 class ProjectModel{
   final String pid;
-  final String project_name;
+  final String name;
   final int start_date;
   final int end_date;
   final String project_cost;
-  final String project_manager;
+  final String manager_name;
   final String client;
   final String status;
 
-  ProjectModel(this.pid, this.project_name, this.start_date, this.end_date, this.project_cost, this.project_manager, this.client, this.status);
+  ProjectModel(this.pid, this.name, this.start_date, this.end_date, this.project_cost, this.manager_name, this.client, this.status);
 
 }

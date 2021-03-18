@@ -224,8 +224,8 @@ class ManagerDashboard extends StatefulWidget {
             element.data().containsKey("pid")
                 ? element["pid"]
                 : "",
-            element.data().containsKey("project_name")
-                ? element["project_name"]
+            element.data().containsKey("name")
+                ? element["name"]
                 : "",
             element.data().containsKey("start_date")
                 ? element["start_date"]
@@ -234,8 +234,8 @@ class ManagerDashboard extends StatefulWidget {
             element.data().containsKey("project_cost")
                 ? element["project_cost"]
                 : "",
-            element.data().containsKey("project_manager")
-                ? element["project_manager"]
+            element.data().containsKey("manager_name")
+                ? element["manager_name"]
                 : "",
             element.data().containsKey("client") ? element["client"] : "",
             element.data().containsKey("status") ? element["status"] : ""
@@ -537,7 +537,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
       'cost': projectCostController.text,
       'manager': _assignedManager,
       'manager_name': _assignedManagerName,
-      'project_name': projectNameController.text,
+      'name': projectNameController.text,
       'status': _projectStatus
     })
         .then((value) =>
@@ -837,7 +837,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
             data: List<List<dynamic>>.generate(
               _onHoldProjects.length,
                   (index) => <dynamic>[
-                    _onHoldProjects[index].project_name,
+                    _onHoldProjects[index].name,
                     _onHoldProjects[index].status,
               ],
             ),
