@@ -289,7 +289,7 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
                   icon: Icon(Icons.line_style),
                 ),
                 Tab(
-                  text: 'Project Report',
+                  text: 'Report',
                   icon: Icon(Icons.print),
                 ),
               ],
@@ -775,6 +775,17 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
     final pdf = pw.Document();
 
     const tableHeaders = ['Project Name', 'Reason'];
+    const taskTableHeaders = ['Task Name', 'Employee Name'];
+
+    const taskDataTable = [
+      ['Design the solution', 'Chris'],
+      ['Prepare for implementation', 'Hemsworth' ],
+      ['Prepare the test/QA ', 'William' ],
+      ['Install the product', 'Benito' ],
+      ['Implement distributed', 'Da Vinci' ],
+      ['Implement a business system', 'Leonardo' ],
+      ['Implement distributed data ', 'Homes' ],
+    ];
 
     pdf.addPage(
       pw.Page(
@@ -814,9 +825,79 @@ class ManagerDashBoardState extends State<ManagerDashboard> {
           // Page layout
           return pw.Column(
             children: [
-              pw.Text('On Hold Projects Report',
+              pw.Text('Horizon PMS',
                   style: pw.TextStyle(
                     fontSize: 40,
+                  )),
+              pw.Text('On Hold Projects Report',
+                  style: pw.TextStyle(
+                    fontSize: 30,
+                  )),
+              pw.Divider(thickness: 4),
+              pw.Expanded(
+                flex: 2,
+                child: pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.SizedBox(width: 10),
+                    pw.Expanded(child: table),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 20),
+
+            ],
+          );
+        },
+      ),
+    );
+
+    //Add 2nd page
+    pdf.addPage(
+      pw.Page(
+        pageFormat: format,
+        build: (context) {
+
+          // Data table
+          final table = pw.Table.fromTextArray(
+            border: null,
+            headers: taskTableHeaders,
+            data: List<List<dynamic>>.generate(
+              taskDataTable.length,
+                  (index) => <dynamic>[
+                    taskDataTable[index][0],
+                    taskDataTable[index][1],
+              ],
+            ),
+            headerHeight: 5,
+            headerStyle: pw.TextStyle(
+              color: PdfColors.red400,
+              fontSize: 25,
+              fontWeight: pw.FontWeight.bold,
+            ),
+            headerDecoration: pw.BoxDecoration(
+            ),
+            rowDecoration: pw.BoxDecoration(
+              border: pw.Border(
+                bottom: pw.BorderSide(
+                  width: .5,
+                ),
+              ),
+            ),
+            cellAlignment: pw.Alignment.centerRight,
+            cellAlignments: {0: pw.Alignment.centerLeft},
+          );
+
+          // Page layout
+          return pw.Column(
+            children: [
+              pw.Text('Horizon PMS',
+                  style: pw.TextStyle(
+                    fontSize: 40,
+                  )),
+              pw.Text('Assigned Tasks Report',
+                  style: pw.TextStyle(
+                    fontSize: 30,
                   )),
               pw.Divider(thickness: 4),
               pw.Expanded(
